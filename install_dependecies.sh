@@ -14,7 +14,7 @@ sudo yum -y install nodejs
 pip3 install --user django boto3 requests drf_yasg
 
 # Install Node.js libraries
-sudo npm install -g react react-dom axios npm@9.6.5
+sudo npm install -g react react-dom axios npm@9.6.5 react-scripts
 
 # Print versions
 python3 --version
