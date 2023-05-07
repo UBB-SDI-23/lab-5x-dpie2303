@@ -1,3 +1,4 @@
+// ArtistList.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
@@ -5,12 +6,10 @@ import {
   Container,
   Typography,
   Grid,
-  Card,
-  CardContent,
-  CardActions,
   Button,
   Box,
 } from '@mui/material';
+import ArtistCard from './ArtistCard';
 
 const ArtistList = () => {
   const [artists, setArtists] = useState([]);
@@ -41,20 +40,7 @@ const ArtistList = () => {
       <Grid container spacing={2}>
         {artists.map((artist) => (
           <Grid item key={artist.id} xs={12} sm={6} md={4}>
-            <Card>
-              <CardContent>
-                <Typography variant="h5">{artist.name}</Typography>
-                <Typography variant="subtitle1">Country: {artist.contry_of_origin}</Typography>
-                <Typography variant="subtitle1">Sex: {artist.sex}</Typography>
-                <Typography variant="subtitle1">Description: {artist.description}</Typography>
-                <Typography variant="subtitle1">Birthday: {artist.birth_day}</Typography>
-              </CardContent>
-              <CardActions>
-                <Button component={Link} to={`/artists/${artist.id}`} variant="outlined">
-                  View Details
-                </Button>
-              </CardActions>
-            </Card>
+            <ArtistCard artist={artist} />
           </Grid>
         ))}
       </Grid>

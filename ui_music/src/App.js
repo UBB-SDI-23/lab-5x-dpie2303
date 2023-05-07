@@ -3,7 +3,6 @@ import {
   BrowserRouter as Router,
   Route,
   Link,
-  Outlet,
   Routes,
 } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Container, Button } from '@mui/material';
