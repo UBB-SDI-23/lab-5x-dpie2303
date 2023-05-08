@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from music.models import RecordCompany, Album, Track, Artist, TrackArtistColab
 
 
@@ -97,3 +98,17 @@ class ArtistAverageTracksPerAlbumSerializer(serializers.Serializer):
     artist_id = serializers.IntegerField()
     artist_name = serializers.CharField()
     average_tracks_per_album = serializers.FloatField()
+
+class TrackArtistColabCreateSerializer(serializers.ModelSerializer):
+    track_id = serializers.IntegerField()
+
+    class Meta:
+        model = TrackArtistColab
+        fields = ['track_id', 'collaboration_type', 'royalty_percentage']
+
+    def validate_track_id(self, value):
+        try:
+            Track.objects.get(pk=value)
+            return value
+        except Track.DoesNotExist:
+            raise serializers.ValidationError("Track not found")
