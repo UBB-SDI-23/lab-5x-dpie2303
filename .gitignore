@@ -3,7 +3,9 @@ server/music_library/__pycache__
 music_app_deployment
 ui_music/node_modules
 ui_music/package-lock.json
-
+server/certs-data
+server/certs
+server/sql_scripts/
 # ignore log files
 *.log
 
