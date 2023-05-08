@@ -22,7 +22,9 @@ services:
       bash -c "python manage.py non_interactive_makemigrations &&
                python manage.py migrate &&
             #   python manage.py populate_db && 
-               python manage.py runserver 0.0.0.0:8000"
+              # python manage.py runserver 0.0.0.0:8000"
+               python manage.py runserver http://nginx:80"
+
     depends_on:
       - db
     ports:
