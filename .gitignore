@@ -1,5 +1,5 @@
-server/music/__pycache__
-server/music_library/__pycache__
+# server/music/__pycache__
+# server/music_library/__pycache__
 music_app_deployment
 ui_music/node_modules
 ui_music/package-lock.json
@@ -17,3 +17,5 @@ __pycache__/
 
 # ignore .pyc files
 *.pyc
+
+server/data/
