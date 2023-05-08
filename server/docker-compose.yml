@@ -41,7 +41,6 @@ services:
       - "443:443"
     volumes:
       - ./certs:/etc/letsencrypt
-      - ./certs-data:/data/letsencrypt
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - server
@@ -51,7 +50,6 @@ services:
     container_name: certbot
     volumes:
       - ./certs:/etc/letsencrypt
-      - ./certs-data:/data/letsencrypt
     command: certonly --webroot --webroot-path=/data/letsencrypt --email necunos.6@gmail.com --agree-tos --no-eff-email --staging -d www.api.dobo-net.click
     depends_on:
       - nginx
