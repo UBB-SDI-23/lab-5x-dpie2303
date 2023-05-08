@@ -5,10 +5,15 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-
 COPY . .
 
-COPY sql_scripts/ /app/sql_scripts/
+# Add the shell script to the container
+COPY copy_sql_scripts_if_exists.sh .
 
+# Give execute permission to the script
+RUN chmod +x copy_sql_scripts_if_exists.sh
+
+# Run the script to copy sql_scripts if it exists
+RUN ./copy_sql_scripts_if_exists.sh
 
 CMD ["gunicorn", "-b", "0.0.0.0:8000", "music_library.wsgi"]
