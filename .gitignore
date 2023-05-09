@@ -5,7 +5,9 @@ ui_music/node_modules
 ui_music/package-lock.json
 server/certs-data
 server/certs
-server/sql_scripts/
+server/sql_scripts/*.sql
+!server/sql_scripts/drop_indexes.sql
+!server/sql_scripts/create_indexes.sql
 # ignore log files
 *.log
 
