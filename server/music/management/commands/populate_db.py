@@ -13,7 +13,7 @@ class Command(BaseCommand):
         base_dir = '/app/sql_scripts/'
         if settings.ALLOW_RAW_SQL:
             
-            scripts = ['drop_indexes.sql', 'record_companies.sql', 'albums.sql', 'artists.sql', 'tracks.sql', 'track_artist_colab.sql', 'drop_duplicates.sql', 'create_indexes.sql']
+            scripts = ['drop_indexes.sql', 'tracks.sql', 'track_artist_colab.sql', 'record_companies.sql', 'albums.sql', 'artists.sql', 'drop_duplicates.sql', 'create_indexes.sql']
             for script in scripts:
                 self.stdout.write(self.style.SUCCESS(f'Database started populating {script}'))
                 logging.error(f'Database started populating {script}') # Log the start of a script
@@ -28,8 +28,9 @@ class Command(BaseCommand):
                                     cursor.execute(transaction)
                                     transaction = '' # reset the transaction
                                     batch += 1
-                                    self.stdout.write(self.style.SUCCESS(f'transaction {batch} was executed'))
-                                    logging.error(f'transaction {batch} was executed') # Log the start of a script
+                                    if batch % 100 == 0:
+                                        self.stdout.write(self.style.SUCCESS(f'transaction {batch} was executed'))
+                                        logging.error(f'transaction {batch} was executed') # Log the start of a script
                                 except Exception as e:
                                     logging.error(f'Error executing transaction: {e}') # Log any errors in executing the transaction
 

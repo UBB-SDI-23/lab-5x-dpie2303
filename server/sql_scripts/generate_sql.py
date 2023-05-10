@@ -107,7 +107,8 @@ def generate_tracks_sql(num_tracks, num_albums, batch_size=1000):
         values_batch = []
         for i in range(num_tracks):
             name = fake.catch_phrase().replace("'", "''")
-            genres = random.choice(genres_list).replace("'", "''")
+            selected_genres = random.sample(genres_list, k=random.randint(1, 3))
+            genres = ", ".join(selected_genres).replace("'", "''")
             description = fake.text(max_nb_chars=60).replace("'", "''")
             bpm = random.randint(60, 200)
             released = random.randint(1950, 2022)
