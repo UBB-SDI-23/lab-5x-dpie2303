@@ -15,13 +15,29 @@ from music.serializers import (RecordCompanySerializer,ArtistHighestPaidSerializ
                           TrackSerializer,RecordCompanyAverageSalesSerializer,ArtistDetailSerializer,ArtistAverageTracksPerAlbumSerializer, TrackArtistColabDetailSerializer , TrackDetailSerializer, ArtistSerializer, TrackArtistColabSerializer, TrackArtistColabCreateSerializer)
 
 from math import ceil
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def custom_paginate(queryset, page, page_size):
+    logger.info('Counting total items')
     total_items = queryset.count()
+    logger.info('Finished counting total items')
+
+    logger.info('Calculating total pages')
     total_pages = ceil(total_items / page_size)
+    logger.info('Finished calculating total pages')
+
     start = (page - 1) * page_size
     end = start + page_size
-    return queryset[start:end], total_pages
+
+    logger.info('Starting queryset slicing')
+    sliced_queryset = queryset[start:end]
+    logger.info('Finished queryset slicing')
+
+    return sliced_queryset, total_pages
+
 
 
 class RecordCompanyList(generics.ListCreateAPIView):
@@ -217,7 +233,8 @@ class ArtistAverageTracksPerAlbumReportView(generics.ListAPIView):
     serializer_class = ArtistAverageTracksPerAlbumSerializer
 
     def get_queryset(self):
-        return Artist.objects.annotate(
+        logger.info('Getting queryset for ArtistAverageTracksPerAlbumReportView')
+        queryset = Artist.objects.annotate(
             album_count=Count('collaborations__track__album', distinct=True),
             track_count=Count('collaborations__track', distinct=True),
         ).annotate(
@@ -227,19 +244,35 @@ class ArtistAverageTracksPerAlbumReportView(generics.ListAPIView):
                 output_field=FloatField()
             )
         ).order_by('-average_tracks_per_album')
+        logger.info('Finished getting queryset for ArtistAverageTracksPerAlbumReportView')
+        return queryset
 
     def list(self, request, *args, **kwargs):
+        logger.info('Starting list method for ArtistAverageTracksPerAlbumReportView')
+
         queryset = self.get_queryset()
         page = int(request.query_params.get('page', 1))
         page_size = int(request.query_params.get('page_size', 10))
 
-        current_page, total_pages = custom_paginate(queryset, page, page_size)
+        logger.info(f'Pagination parameters: page = {page}, page_size = {page_size}')
 
+        logger.info('Starting custom pagination')
+        current_page, total_pages = custom_paginate(queryset, page, page_size)
+        logger.info('Finished custom pagination')
+
+        logger.info('Starting serialization')
         serializer = self.get_serializer(current_page, many=True)
-        return Response({
+        logger.info('Finished serialization')
+        
+        response = {
             'artists': serializer.data,
             'total_pages': total_pages,
-        })
+        }
+
+        logger.info('Finished list method for ArtistAverageTracksPerAlbumReportView')
+
+    
+        return Response(response)
 
 
 class RecordCompanyAverageSalesReportView(generics.ListAPIView):
