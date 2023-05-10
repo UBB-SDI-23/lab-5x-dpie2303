@@ -14,7 +14,7 @@ const ArtistCard = ({ artist }) => {
     <Card>
       <CardContent>
         <Typography variant="h5">{artist.name}</Typography>
-        <Typography variant="subtitle1">Country: {artist.contry_of_origin}</Typography>
+        <Typography variant="subtitle1">Country: {artist.country_of_origin}</Typography>
         <Typography variant="subtitle1">Sex: {artist.sex}</Typography>
         <Typography variant="subtitle1">Description: {artist.description}</Typography>
         <Typography variant="subtitle1">Birthday: {artist.birth_day}</Typography>

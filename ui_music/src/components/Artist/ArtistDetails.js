@@ -66,9 +66,9 @@ const ArtistDetails = () => {
               required
               fullWidth
               label="Country of Origin"
-              name="contry_of_origin"
-              value={artist.contry_of_origin}
-              onChange={(event) => setArtist({ ...artist, contry_of_origin: event.target.value })}
+              name="country_of_origin"
+              value={artist.country_of_origin}
+              onChange={(event) => setArtist({ ...artist, country_of_origin: event.target.value })}
             />
           </Grid>
           <Grid item xs={12}>
