@@ -20,12 +20,16 @@ class Command(BaseCommand):
                 with connection.cursor() as cursor:
                     with open(base_dir + script, 'r') as f:
                         transaction = ''
+                        batch = 0
                         for line in f:
                             transaction += line
                             if line.strip().endswith('COMMIT;'):
                                 try:
                                     cursor.execute(transaction)
                                     transaction = '' # reset the transaction
+                                    batch += 1
+                                    self.stdout.write(self.style.SUCCESS(f'transaction {batch} was executed'))
+                                    logging.error(f'transaction {batch} was executed') # Log the start of a script
                                 except Exception as e:
                                     logging.error(f'Error executing transaction: {e}') # Log any errors in executing the transaction
 
