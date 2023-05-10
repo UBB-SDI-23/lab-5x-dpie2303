@@ -2,6 +2,7 @@ import logging
 from django.core.management.base import BaseCommand
 from django.db import connection
 from django.conf import settings
+from django.db import connections
 
 class Command(BaseCommand):
     help = "Populate the database with sample data"
@@ -23,7 +24,7 @@ class Command(BaseCommand):
                         transaction += line
                         if line.strip().endswith('COMMIT;'):
                             # Here we create a new cursor for each transaction
-                            with connections['default'].cursor() as cursor:
+                            with connection.cursor() as cursor:
                                 try:
                                     cursor.execute(transaction)
                                     transaction = '' # reset the transaction
