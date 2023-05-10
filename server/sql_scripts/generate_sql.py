@@ -124,20 +124,11 @@ def generate_tracks_sql(num_tracks, num_albums, batch_size=1000):
 
 
 def generate_track_artist_colab_sql(num_colabs, num_tracks, num_artists, batch_size=1000):
-    pairs_set = set()
-
-    while len(pairs_set) < num_colabs:
-        # Generate a list of pairs equal to the difference needed
-        diff = num_colabs - len(pairs_set)
-        new_pairs = [(random.randint(1, num_tracks), random.randint(1, num_artists)) for _ in range(diff)]
-        
-        # Add to the existing set for uniqueness
-        pairs_set.update(new_pairs)
-
-
     with open('sql_scripts/track_artist_colab.sql', 'w') as f:
         values_batch = []
-        for (track_id, artist_id) in pairs_set:
+        for _ in range(num_colabs):
+            track_id = random.randint(1, num_tracks)
+            artist_id = random.randint(1, num_artists)
             collaboration_type = random.choice(collaboration_types)
             royalty_percentage = round(random.uniform(0, 100), 2)
             values_batch.append(f"({track_id}, {artist_id}, '{collaboration_type}', {royalty_percentage})")

@@ -8,6 +8,7 @@ server/certs
 server/sql_scripts/*.sql
 !server/sql_scripts/drop_indexes.sql
 !server/sql_scripts/create_indexes.sql
+!server/sql_scripts/drop_duplicates.sql
 # ignore log files
 *.log
 

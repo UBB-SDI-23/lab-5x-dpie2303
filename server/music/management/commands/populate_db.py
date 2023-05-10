@@ -12,7 +12,7 @@ class Command(BaseCommand):
 
         base_dir = '/app/sql_scripts/'
         if settings.ALLOW_RAW_SQL:
-            scripts = ['drop_indexes.sql','record_companies.sql', 'albums.sql', 'artists.sql', 'tracks.sql', 'track_artist_colab.sql', 'create_indexes.sql']
+            scripts = ['drop_indexes.sql','record_companies.sql', 'albums.sql', 'artists.sql', 'tracks.sql', 'track_artist_colab.sql', 'drop_duplicates.sql' 'create_indexes.sql']
             for script in scripts:
                 self.stdout.write(self.style.SUCCESS(f'Database started populating {script}'))
                 logging.error(f'Database started populating {script}') # Log the start of a script
