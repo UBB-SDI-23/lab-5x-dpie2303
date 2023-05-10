@@ -83,30 +83,6 @@ def generate_record_companies_sql(num_companies, batch_size=1000):
             write_batch_inserts(f, 'music_recordcompany', '(name, founded_date, headquarters_location, contact_email)', values_batch)
 
 
-
-def generate_track_artist_colab_sql(num_colabs, num_tracks, num_artists, batch_size=1000):
-    existing_pairs = set()
-    with open('sql_scripts/track_artist_colab.sql', 'w') as f:
-        values_batch = []
-        for _ in range(num_colabs):
-            track_id = random.randint(1, num_tracks)
-            artist_id = random.randint(1, num_artists)
-            while (track_id, artist_id) in existing_pairs:
-                track_id = random.randint(1, num_tracks)
-                artist_id = random.randint(1, num_artists)
-            existing_pairs.add((track_id, artist_id))
-
-            collaboration_type = random.choice(collaboration_types)
-            royalty_percentage = round(random.uniform(0, 100), 2)
-            values_batch.append(f"({track_id}, {artist_id}, '{collaboration_type}', {royalty_percentage})")
-
-            if len(values_batch) % batch_size == 0:
-                write_batch_inserts(f, 'music_trackartistcolab', '(track_id, artist_id, collaboration_type, royalty_percentage)', values_batch)
-                values_batch = []
-
-        if values_batch:
-            write_batch_inserts(f, 'music_trackartistcolab', '(track_id, artist_id, collaboration_type, royalty_percentage)', values_batch)
-
 def generate_artists_sql(num_artists, batch_size=1000):
     with open('sql_scripts/artists.sql', 'w') as f:
         values_batch = []
@@ -146,6 +122,32 @@ def generate_tracks_sql(num_tracks, num_albums, batch_size=1000):
             write_batch_inserts(f, 'music_track', '(name, genres, description, bpm, released, album_id)', values_batch)
 
 
+
+def generate_track_artist_colab_sql(num_colabs, num_tracks, num_artists, batch_size=1000):
+    pairs_set = set()
+
+    while len(pairs_set) < num_colabs:
+        # Generate a list of pairs equal to the difference needed
+        diff = num_colabs - len(pairs_set)
+        new_pairs = [(random.randint(1, num_tracks), random.randint(1, num_artists)) for _ in range(diff)]
+        
+        # Add to the existing set for uniqueness
+        pairs_set.update(new_pairs)
+
+
+    with open('sql_scripts/track_artist_colab.sql', 'w') as f:
+        values_batch = []
+        for (track_id, artist_id) in pairs_set:
+            collaboration_type = random.choice(collaboration_types)
+            royalty_percentage = round(random.uniform(0, 100), 2)
+            values_batch.append(f"({track_id}, {artist_id}, '{collaboration_type}', {royalty_percentage})")
+
+            if len(values_batch) % batch_size == 0:
+                write_batch_inserts(f, 'music_trackartistcolab', '(track_id, artist_id, collaboration_type, royalty_percentage)', values_batch)
+                values_batch = []
+
+        if values_batch:
+            write_batch_inserts(f, 'music_trackartistcolab', '(track_id, artist_id, collaboration_type, royalty_percentage)', values_batch)
 
 
 
