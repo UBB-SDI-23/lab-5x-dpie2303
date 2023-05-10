@@ -30,9 +30,9 @@ DROP INDEX IF EXISTS music_trackartistcolab_artist_id_f913e6b0;
 DROP INDEX IF EXISTS music_trackartistcolab_track_id_b773040b;
 
 -- Drop foreign key constraints
-ALTER TABLE music_album DROP CONSTRAINT IF EXISTS music_album_record_company_id_fkey;
-ALTER TABLE music_track DROP CONSTRAINT IF EXISTS music_track_album_id_fkey;
-ALTER TABLE music_trackartistcolab DROP CONSTRAINT IF EXISTS music_trackartistcolab_artist_id_fkey;
-ALTER TABLE music_trackartistcolab DROP CONSTRAINT IF EXISTS music_trackartistcolab_track_id_fkey;
+-- ALTER TABLE music_album DROP CONSTRAINT IF EXISTS music_album_record_company_id_fkey;
+-- ALTER TABLE music_track DROP CONSTRAINT IF EXISTS music_track_album_id_fkey;
+-- ALTER TABLE music_trackartistcolab DROP CONSTRAINT IF EXISTS music_trackartistcolab_artist_id_fkey;
+-- ALTER TABLE music_trackartistcolab DROP CONSTRAINT IF EXISTS music_trackartistcolab_track_id_fkey;
 
 COMMIT;

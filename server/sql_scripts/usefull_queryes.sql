@@ -41,3 +41,7 @@ WHERE
     con.contype = 'f'
     AND conrelid::regclass::text LIKE 'music%';
 
+
+    psql -h localhost -p 5432 -U dobo_admin -d music_db
+
+
