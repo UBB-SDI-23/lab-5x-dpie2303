@@ -3,6 +3,20 @@ from rest_framework import serializers
 from music.models import RecordCompany, Album, Track, Artist, TrackArtistColab
 
 
+
+class ArtistListSerializer(serializers.ModelSerializer):
+    collaborations_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Artist
+        fields = ['id', 'name', 'country_of_origin', 'sex', 'description', 'birth_day', 'collaborations_count']
+
+    def get_collaborations_count(self, obj):
+        return obj.collaborations_count
+
+
+
+
 class RecordCompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = RecordCompany

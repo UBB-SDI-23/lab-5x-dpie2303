@@ -12,7 +12,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from music.models import RecordCompany, Album, Track, Artist, TrackArtistColab
 from music.serializers import (RecordCompanySerializer,ArtistHighestPaidSerializer,StatisticsSerializer, TrackArtistColabCreateSerializer, AlbumSerializer, AlbumDetailSerializer,
-                          TrackSerializer,RecordCompanyAverageSalesSerializer,ArtistDetailSerializer,ArtistAverageTracksPerAlbumSerializer, TrackArtistColabDetailSerializer , TrackDetailSerializer, ArtistSerializer, TrackArtistColabSerializer, TrackArtistColabCreateSerializer)
+                          TrackSerializer,ArtistListSerializer,RecordCompanyAverageSalesSerializer,ArtistDetailSerializer,ArtistAverageTracksPerAlbumSerializer, TrackArtistColabDetailSerializer , TrackDetailSerializer, ArtistSerializer, TrackArtistColabSerializer, TrackArtistColabCreateSerializer)
 
 from math import ceil
 import logging
@@ -111,10 +111,10 @@ class TrackDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class ArtistList(generics.ListCreateAPIView):
-    serializer_class = ArtistSerializer
+    serializer_class = ArtistListSerializer
 
     def get_queryset(self):
-        queryset = Artist.objects.all()
+        queryset = Artist.objects.annotate(collaborations_count=Count('collaborations'))
         return queryset
 
     def list(self, request, *args, **kwargs):

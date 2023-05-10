@@ -13,19 +13,19 @@ class Command(BaseCommand):
         base_dir = '/app/sql_scripts/'
         if settings.ALLOW_RAW_SQL:
             #,'record_companies.sql', 'albums.sql'
-            scripts = ['drop_indexes.sql', 'artists.sql', 'tracks.sql', 'track_artist_colab.sql', 'drop_duplicates.sql' 'create_indexes.sql']
+            scripts = ['drop_indexes.sql', 'artists.sql', 'tracks.sql', 'track_artist_colab.sql', 'drop_duplicates.sql', 'create_indexes.sql']
             for script in scripts:
                 self.stdout.write(self.style.SUCCESS(f'Database started populating {script}'))
                 logging.error(f'Database started populating {script}') # Log the start of a script
                 with connection.cursor() as cursor:
                     with open(base_dir + script, 'r') as f:
-                        script_content = f.read()
-                        transactions = script_content.split('COMMIT;')
-
-                        for transaction in transactions:
-                            if transaction.strip():
+                        transaction = ''
+                        for line in f:
+                            transaction += line
+                            if line.strip().endswith('COMMIT;'):
                                 try:
-                                    cursor.execute(transaction.strip() + 'COMMIT;')
+                                    cursor.execute(transaction)
+                                    transaction = '' # reset the transaction
                                 except Exception as e:
                                     logging.error(f'Error executing transaction: {e}') # Log any errors in executing the transaction
 
