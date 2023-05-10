@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 
 class RecordCompany(models.Model):
     name = models.CharField(max_length=255, db_index=True) # Add index
@@ -21,6 +22,10 @@ class Track(models.Model):
     bpm = models.IntegerField()
     released = models.IntegerField()
     album = models.ForeignKey(Album, on_delete=models.CASCADE, related_name='tracks', db_index=True) # Add index
+    
+    def clean(self):
+        if self.bpm < 0:
+            raise ValidationError(_("BPM must be a non-negative integer."))
 
 class Artist(models.Model):
     name = models.CharField(max_length=255, db_index=True) # Add index
@@ -34,3 +39,10 @@ class TrackArtistColab(models.Model):
     artist = models.ForeignKey(Artist, on_delete=models.CASCADE, related_name='collaborations', db_index=True) # Add index
     collaboration_type = models.CharField(max_length=255)
     royalty_percentage = models.DecimalField(max_digits=5, decimal_places=2)
+    
+    def clean(self):
+        if self.royalty_percentage < 0:
+            raise ValidationError(_("Royalty percentage must be a non-negative decimal."))
+
+        if self.royalty_percentage > 100:
+            raise ValidationError(_("Royalty percentage must not be greater than 100."))

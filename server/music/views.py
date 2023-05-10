@@ -2,14 +2,26 @@ from django.db.models import Avg,F, Count, OuterRef, Subquery, Q, Case, When, \
     IntegerField, Exists, Sum, ExpressionWrapper, DecimalField
 from django.db.models.functions import Coalesce, Cast
 from collections import Counter
+from django.db.models import Case,Prefetch, When, FloatField
+
 from rest_framework import generics
 from rest_framework import status
+from django.core.paginator import Paginator
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from music.models import RecordCompany, Album, Track, Artist, TrackArtistColab
 from music.serializers import (RecordCompanySerializer,ArtistHighestPaidSerializer,StatisticsSerializer, TrackArtistColabCreateSerializer, AlbumSerializer, AlbumDetailSerializer,
-                          TrackSerializer,ArtistDetailSerializer,ArtistAverageTracksPerAlbumSerializer, TrackArtistColabDetailSerializer , TrackDetailSerializer, ArtistSerializer, TrackArtistColabSerializer, TrackArtistColabCreateSerializer)
+                          TrackSerializer,RecordCompanyAverageSalesSerializer,ArtistDetailSerializer,ArtistAverageTracksPerAlbumSerializer, TrackArtistColabDetailSerializer , TrackDetailSerializer, ArtistSerializer, TrackArtistColabSerializer, TrackArtistColabCreateSerializer)
+
+from math import ceil
+
+def custom_paginate(queryset, page, page_size):
+    total_items = queryset.count()
+    total_pages = ceil(total_items / page_size)
+    start = (page - 1) * page_size
+    end = start + page_size
+    return queryset[start:end], total_pages
 
 
 class RecordCompanyList(generics.ListCreateAPIView):
@@ -21,11 +33,37 @@ class RecordCompanyDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = RecordCompany.objects.all()
     serializer_class = RecordCompanySerializer
 
-
 class AlbumList(generics.ListCreateAPIView):
-    queryset = Album.objects.all()
     serializer_class = AlbumSerializer
 
+    def get_queryset(self):
+        queryset = Album.objects.all()
+        top_rank = self.request.query_params.get('top_rank', None)
+
+        if top_rank is not None:
+            queryset = queryset.filter(tracks__top_rank__lte=top_rank).distinct()
+
+        return queryset.annotate(track_count=Count('tracks'))
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 10))
+
+        # Use the custom pagination function
+        current_page, total_pages = custom_paginate(queryset, page, page_size)
+
+        serializer = self.get_serializer(current_page, many=True)
+        response_data = []
+
+        for album, count in zip(serializer.data, current_page):
+            album['track_count'] = count.track_count
+            response_data.append(album)
+
+        return Response({
+            'albums': response_data,
+            'total_pages': total_pages
+        })
 
 class AlbumDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Album.objects.all()
@@ -36,6 +74,20 @@ class TrackList(generics.ListCreateAPIView):
     queryset = Track.objects.all()
     serializer_class = TrackSerializer
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 10))
+        
+        # Use the custom pagination function
+        current_page, total_pages = custom_paginate(queryset, page, page_size)
+
+        serializer = self.get_serializer(current_page, many=True)
+        return Response({
+            'tracks': serializer.data,
+            'total_pages': total_pages
+        })
+
 
 class TrackDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Track.objects.all()
@@ -43,10 +95,26 @@ class TrackDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class ArtistList(generics.ListCreateAPIView):
-    queryset = Artist.objects.all()
     serializer_class = ArtistSerializer
 
+    def get_queryset(self):
+        queryset = Artist.objects.all()
+        return queryset
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 10))
+        
+        # Use the custom pagination function
+        current_page, total_pages = custom_paginate(queryset, page, page_size)
+
+        serializer = self.get_serializer(current_page, many=True)
+        return Response({
+            'artists': serializer.data,
+            'total_pages': total_pages
+        })
+    
 class ArtistDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Artist.objects.all()
     serializer_class = ArtistDetailSerializer
@@ -153,17 +221,47 @@ class ArtistAverageTracksPerAlbumReportView(generics.ListAPIView):
             album_count=Count('collaborations__track__album', distinct=True),
             track_count=Count('collaborations__track', distinct=True),
         ).annotate(
-            average_tracks_per_album=(1.0 * F('track_count')) / F('album_count')
+            average_tracks_per_album=Case(
+                When(album_count=0, then=0),
+                default=(1.0 * F('track_count')) / F('album_count'),
+                output_field=FloatField()
+            )
         ).order_by('-average_tracks_per_album')
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        data = []
-        for artist in queryset:
-            data.append({
-                'artist_id': artist.id,
-                'artist_name': artist.name,
-                'average_tracks_per_album': artist.average_tracks_per_album
-            })
-        return Response(data)
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 10))
 
+        current_page, total_pages = custom_paginate(queryset, page, page_size)
+
+        serializer = self.get_serializer(current_page, many=True)
+        return Response({
+            'artists': serializer.data,
+            'total_pages': total_pages,
+        })
+
+
+class RecordCompanyAverageSalesReportView(generics.ListAPIView):
+    serializer_class = RecordCompanyAverageSalesSerializer
+
+    def get_queryset(self):
+        return RecordCompany.objects.annotate(
+            album_count=Count('albums', distinct=True),
+            total_copy_sales=Sum('albums__copy_sales'),
+        ).annotate(
+            average_sales_per_album=(1.0 * F('total_copy_sales')) / F('album_count')
+        ).order_by('-average_sales_per_album')
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 10))
+
+        current_page, total_pages = custom_paginate(queryset, page, page_size)
+
+        serializer = self.get_serializer(current_page, many=True)
+        return Response({
+            'record_companies': serializer.data,
+            'total_pages': total_pages
+        })

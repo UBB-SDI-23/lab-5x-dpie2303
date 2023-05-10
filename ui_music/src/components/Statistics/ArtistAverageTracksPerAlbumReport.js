@@ -9,18 +9,23 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TableSortLabel,
+  TablePagination,
 } from '@mui/material';
 
 const ArtistAverageTracksPerAlbumReport = () => {
-  const [data, setData] = useState([]);
-  const [order, setOrder] = useState('asc');
-  const [orderBy, setOrderBy] = useState('artist_name');
+  const [data, setData] = useState({ results: [] });
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.get('/api/artist_average_tracks_per_album/');
+        const response = await api.get('/api/artist_average_tracks_per_album/', {
+          params: {
+            page: page + 1,
+            page_size: rowsPerPage,
+          },
+        });
         setData(response.data);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -28,21 +33,16 @@ const ArtistAverageTracksPerAlbumReport = () => {
     };
 
     fetchData();
-  }, []);
+  }, [page, rowsPerPage]);
 
-  const handleSort = (property) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
   };
 
-  const sortedData = data.sort((a, b) => {
-    if (order === 'asc') {
-      return a[orderBy] < b[orderBy] ? -1 : 1;
-    } else {
-      return a[orderBy] < b[orderBy] ? 1 : -1;
-    }
-  });
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
   return (
     <Container>
@@ -53,28 +53,12 @@ const ArtistAverageTracksPerAlbumReport = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === 'artist_name'}
-                  direction={orderBy === 'artist_name' ? order : 'asc'}
-                  onClick={() => handleSort('artist_name')}
-                >
-                  Artist Name
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="right">
-                <TableSortLabel
-                  active={orderBy === 'average_tracks_per_album'}
-                  direction={orderBy === 'average_tracks_per_album' ? order : 'asc'}
-                  onClick={() => handleSort('average_tracks_per_album')}
-                >
-                  Avg. Tracks per Album
-                </TableSortLabel>
-              </TableCell>
+              <TableCell>Artist Name</TableCell>
+              <TableCell align="right">Avg. Tracks per Album</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {sortedData.map((row) => (
+            {data.results.map((row) => (
               <TableRow key={row.artist_id}>
                 <TableCell component="th" scope="row">
                   {row.artist_name}
@@ -87,6 +71,14 @@ const ArtistAverageTracksPerAlbumReport = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <TablePagination
+        component="div"
+        count={data.count || 0}
+        page={page}
+        onPageChange={handleChangePage}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
     </Container>
   );
 };

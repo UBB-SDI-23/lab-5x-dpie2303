@@ -95,8 +95,8 @@ class StatisticsSerializer(serializers.Serializer):
 
 
 class ArtistAverageTracksPerAlbumSerializer(serializers.Serializer):
-    artist_id = serializers.IntegerField()
-    artist_name = serializers.CharField()
+    id = serializers.IntegerField()
+    name = serializers.CharField()  # Changed from 'artist_name'
     average_tracks_per_album = serializers.FloatField()
 
 class TrackArtistColabCreateSerializer(serializers.ModelSerializer):
@@ -112,3 +112,9 @@ class TrackArtistColabCreateSerializer(serializers.ModelSerializer):
             return value
         except Track.DoesNotExist:
             raise serializers.ValidationError("Track not found")
+        
+
+class RecordCompanyAverageSalesSerializer(serializers.Serializer):
+    record_company_id = serializers.IntegerField()
+    record_company_name = serializers.CharField()
+    average_sales_per_album = serializers.FloatField()
