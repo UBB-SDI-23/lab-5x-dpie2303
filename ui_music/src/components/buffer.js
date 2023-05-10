@@ -1,9 +1,10 @@
+/ src/components/ArtistDetails.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { Container, Typography, TextField, Button, Grid, Select, MenuItem, Box } from '@mui/material';
 import debounce from 'lodash.debounce'; // don't forget to install lodash
-const ArtistDetails = () => {
+onst ArtistDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [artist, setArtist] = useState(null);

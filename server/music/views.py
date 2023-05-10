@@ -2,17 +2,16 @@ from django.db.models import Avg,F, Count, OuterRef, Subquery, Q, Case, When, \
     IntegerField, Exists, Sum, ExpressionWrapper, DecimalField
 from django.db.models.functions import Coalesce, Cast
 from collections import Counter
-from django.db.models import Case,Prefetch, When, FloatField
+from django.db.models import Case,Prefetch, When, FloatField, Q
 
 from rest_framework import generics
 from rest_framework import status
-from django.core.paginator import Paginator
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from music.models import RecordCompany, Album, Track, Artist, TrackArtistColab
 from music.serializers import (RecordCompanySerializer,ArtistHighestPaidSerializer,StatisticsSerializer, TrackArtistColabCreateSerializer, AlbumSerializer, AlbumDetailSerializer,
-                          TrackSerializer,ArtistListSerializer,RecordCompanyAverageSalesSerializer,ArtistDetailSerializer,ArtistAverageTracksPerAlbumSerializer, TrackArtistColabDetailSerializer , TrackDetailSerializer, ArtistSerializer, TrackArtistColabSerializer, TrackArtistColabCreateSerializer)
+                          TrackSerializer,TrackLightSerializer,ArtistListSerializer,RecordCompanyAverageSalesSerializer,ArtistDetailSerializer,ArtistAverageTracksPerAlbumSerializer, TrackArtistColabDetailSerializer , TrackDetailSerializer, ArtistSerializer, TrackArtistColabSerializer, TrackArtistColabCreateSerializer)
 
 from math import ceil
 import logging
@@ -37,6 +36,31 @@ def custom_paginate(queryset, page, page_size):
     logger.info('Finished queryset slicing')
 
     return sliced_queryset, total_pages
+
+
+
+from rest_framework.response import Response
+
+class TrackSearchAPIView(generics.ListAPIView):
+    serializer_class = TrackLightSerializer
+
+    def get_queryset(self):
+        query = self.request.query_params.get('q', '')
+        queryset = Track.objects.filter(Q(name__icontains=query))
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = request.query_params.get('page', 1)
+        page_size = request.query_params.get('page_size', 10)
+        queryset, total_pages = custom_paginate(queryset, int(page), int(page_size))
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            'total_pages': total_pages,
+            'results': serializer.data
+        })
 
 
 

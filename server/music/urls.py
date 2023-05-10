@@ -16,6 +16,7 @@ from music.views import (
     album_sales_query,
     ArtistAverageTracksPerAlbumReportView,
     RecordCompanyAverageSalesReportView,
+    TrackSearchAPIView,
 )
 
 urlpatterns = [
@@ -35,4 +36,6 @@ urlpatterns = [
     path('multiple_statistics/', MultipleStatistics.as_view(), name='multiple_statistics'),
     path('artist_average_tracks_per_album/', ArtistAverageTracksPerAlbumReportView.as_view(), name='artist_average_tracks_per_album_report'),
     path('record_company_average_sales/', RecordCompanyAverageSalesReportView.as_view(), name='record_company_average_sales_report'),
+    path('tracks/search/', TrackSearchAPIView.as_view(), name='track_search')
+
 ]

@@ -15,6 +15,10 @@ class ArtistListSerializer(serializers.ModelSerializer):
         return obj.collaborations_count
 
 
+class TrackLightSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Track
+        fields = ['id', 'name', 'released']
 
 
 class RecordCompanySerializer(serializers.ModelSerializer):
