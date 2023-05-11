@@ -48,7 +48,7 @@ services:
     depends_on:
       - server
 
-certbot:
+  certbot:
     image: certbot/certbot
     container_name: certbot
     volumes:
