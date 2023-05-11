@@ -31,6 +31,20 @@ class TrackLightSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'released']
 
 
+
+class AlbumListSerializer(serializers.ModelSerializer):
+    tracks_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Album
+        fields = ['id', 'name', 'description', 'top_rank', 'copy_sales', 'release_date', 'record_company', 'tracks_count']
+
+    def get_tracks_count(self, obj):
+        return obj.tracks_count
+
+
+
+
 class RecordCompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = RecordCompany

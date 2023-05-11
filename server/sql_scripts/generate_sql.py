@@ -149,7 +149,7 @@ if __name__ == "__main__":
     num_tracks = 10000000
     num_artists = 1000000
     num_colabs = 10000000
-    batch_size = 100
+    batch_size = 1000
 
     # num_record_companies = 5
     # num_albums = 5
@@ -158,13 +158,13 @@ if __name__ == "__main__":
     # num_colabs = 10
     # batch_size = 2
 
-    # generate_record_companies_sql(num_record_companies, batch_size)
-    # print('record companies done')
-    # generate_albums_sql(num_albums, num_record_companies, batch_size)
-    # print('albums done')
+    generate_record_companies_sql(num_record_companies, batch_size)
+    print('record companies done')
+    generate_albums_sql(num_albums, num_record_companies, batch_size)
+    print('albums done')
     generate_tracks_sql(num_tracks, num_albums, batch_size)
     print('tracks done')
-    # generate_artists_sql(num_artists, batch_size)
-    # print('artists done')
-    # generate_track_artist_colab_sql(num_colabs, num_tracks, num_artists, batch_size)
-    # print('track artist colab done')
+    generate_artists_sql(num_artists, batch_size)
+    print('artists done')
+    generate_track_artist_colab_sql(num_colabs, num_tracks, num_artists, batch_size)
+    print('track artist colab done')

@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from music.models import RecordCompany, Album, Track, Artist, TrackArtistColab
 from music.serializers import (RecordCompanySerializer,ArtistHighestPaidSerializer,StatisticsSerializer, TrackArtistColabCreateSerializer, AlbumSerializer, AlbumDetailSerializer,
-                          TrackSerializer,TrackLightSerializer,ArtistListSerializer,RecordCompanyAverageSalesSerializer,ArtistDetailSerializer,ArtistAverageTracksPerAlbumSerializer, TrackArtistColabDetailSerializer , TrackDetailSerializer, ArtistSerializer, TrackArtistColabSerializer, TrackArtistColabCreateSerializer)
+                          TrackSerializer,AlbumListSerializer,TrackListSerializer,TrackLightSerializer,ArtistListSerializer,RecordCompanyAverageSalesSerializer,ArtistDetailSerializer,ArtistAverageTracksPerAlbumSerializer, TrackArtistColabDetailSerializer , TrackDetailSerializer, ArtistSerializer, TrackArtistColabSerializer, TrackArtistColabCreateSerializer)
 
 from math import ceil
 import logging
@@ -39,7 +39,6 @@ def custom_paginate(queryset, page, page_size):
 
 
 
-from rest_framework.response import Response
 
 class TrackSearchAPIView(generics.ListAPIView):
     serializer_class = TrackLightSerializer
@@ -64,55 +63,13 @@ class TrackSearchAPIView(generics.ListAPIView):
 
 
 
-class RecordCompanyList(generics.ListCreateAPIView):
-    queryset = RecordCompany.objects.all()
-    serializer_class = RecordCompanySerializer
-
-
-class RecordCompanyDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = RecordCompany.objects.all()
-    serializer_class = RecordCompanySerializer
-
-class AlbumList(generics.ListCreateAPIView):
-    serializer_class = AlbumSerializer
-
-    def get_queryset(self):
-        queryset = Album.objects.all()
-        top_rank = self.request.query_params.get('top_rank', None)
-
-        if top_rank is not None:
-            queryset = queryset.filter(tracks__top_rank__lte=top_rank).distinct()
-
-        return queryset.annotate(track_count=Count('tracks'))
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        page = int(request.query_params.get('page', 1))
-        page_size = int(request.query_params.get('page_size', 10))
-
-        # Use the custom pagination function
-        current_page, total_pages = custom_paginate(queryset, page, page_size)
-
-        serializer = self.get_serializer(current_page, many=True)
-        response_data = []
-
-        for album, count in zip(serializer.data, current_page):
-            album['track_count'] = count.track_count
-            response_data.append(album)
-
-        return Response({
-            'albums': response_data,
-            'total_pages': total_pages
-        })
-
-class AlbumDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Album.objects.all()
-    serializer_class = AlbumDetailSerializer
-
 
 class TrackList(generics.ListCreateAPIView):
-    queryset = Track.objects.all()
-    serializer_class = TrackSerializer
+    serializer_class = TrackListSerializer
+
+    def get_queryset(self):
+        queryset = Track.objects.annotate(collaborations_count=Count('collaborations'))
+        return queryset
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -127,6 +84,44 @@ class TrackList(generics.ListCreateAPIView):
             'tracks': serializer.data,
             'total_pages': total_pages
         })
+
+
+class AlbumList(generics.ListCreateAPIView):
+    serializer_class = AlbumListSerializer
+
+    def get_queryset(self):
+        queryset = Album.objects.annotate(tracks_count=Count('tracks'))
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 10))
+
+        # Use the custom pagination function
+        current_page, total_pages = custom_paginate(queryset, page, page_size)
+
+        serializer = self.get_serializer(current_page, many=True)
+        return Response({
+            'albums': serializer.data,
+            'total_pages': total_pages
+        })
+
+class RecordCompanyList(generics.ListCreateAPIView):
+    queryset = RecordCompany.objects.all()
+    serializer_class = RecordCompanySerializer
+
+
+class RecordCompanyDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = RecordCompany.objects.all()
+    serializer_class = RecordCompanySerializer
+
+
+class AlbumDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Album.objects.all()
+    serializer_class = AlbumDetailSerializer
+
+
 
 
 class TrackDetail(generics.RetrieveUpdateDestroyAPIView):
