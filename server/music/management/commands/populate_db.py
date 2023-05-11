@@ -1,3 +1,4 @@
+import logging
 from django.core.management.base import BaseCommand
 from django.db import connection
 from django.conf import settings
@@ -22,15 +23,19 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         base_dir = '/app/sql_scripts/'
+        logger = logging.getLogger(__name__)
 
         if not settings.ALLOW_RAW_SQL:
             self.stdout.write(self.style.ERROR('Raw SQL not allowed in settings'))
+            logger.error('Raw SQL not allowed in settings')
             return
 
         scripts = ['drop_indexes.sql', 'record_companies.sql', 'albums.sql', 'artists.sql', 'tracks.sql', 'track_artist_colab.sql', 'drop_duplicates.sql', 'create_indexes.sql']
 
         for script in scripts:
             self.stdout.write(self.style.SUCCESS(f'Database started populating {script}'))
+            logger.info(f'Database started populating {script}')
+
             with open(base_dir + script, 'r') as f:
                 buffer_size = 1024 * 1024 # Read the file in 1 MB chunks
                 batch = 0
@@ -42,7 +47,10 @@ class Command(BaseCommand):
                             batch += 1
                             if batch % 100 == 0:
                                 self.stdout.write(self.style.SUCCESS(f'transaction {batch} was executed'))
+                                logger.info(f'transaction {batch} was executed')
                         except Exception as e:
                             self.stdout.write(self.style.ERROR(f'Error executing transaction {batch}: {e}'))
+                            logger.error(f'Error executing transaction {batch}: {e}')
 
             self.stdout.write(self.style.SUCCESS(f'Database populated successfully {script}'))
+            logger.info(f'Database populated successfully {script}')
