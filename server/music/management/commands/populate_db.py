@@ -1,4 +1,4 @@
-import logging
+from django.core.management.base import import logging
 from django.core.management.base import BaseCommand
 from django.db import connection
 from django.conf import settings
@@ -6,18 +6,13 @@ from django.conf import settings
 class Command(BaseCommand):
     help = "Populate the database with sample data"
 
-    def sql_commands(self, file, buffer_size):
+    def sql_commands(self, file):
         transaction = ''
-        while True:
-            block = file.read(buffer_size)
-            if not block:
-                # End of file
-                break
-            transaction += block
-            while 'COMMIT;' in transaction:
-                idx = transaction.index('COMMIT;') + len('COMMIT;')
-                yield transaction[:idx]
-                transaction = transaction[idx:]
+        for line in file:
+            transaction += line
+            if 'COMMIT;' in transaction:
+                yield transaction
+                transaction = ''
         if transaction:
             yield transaction
 
@@ -29,8 +24,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR('Raw SQL not allowed in settings'))
             logger.error('Raw SQL not allowed in settings')
             return
-        # 'tracks.sql', 'track_artist_colab.sql', 'drop_duplicates.sql', 'create_indexes.sql'
-        # 'drop_indexes.sql', 'record_companies.sql', 'albums.sql', 'artists.sql'
+        # 'drop_indexes.sql', 'record_companies.sql', 'albums.sql', 'artists.sql',
         scripts = ['tracks.sql', 'track_artist_colab.sql', 'drop_duplicates.sql', 'create_indexes.sql']
 
         for script in scripts:
@@ -38,20 +32,22 @@ class Command(BaseCommand):
             logger.info(f'Database started populating {script}')
 
             with open(base_dir + script, 'r') as f:
-                buffer_size = 1024 * 1024 # Read the file in 1 MB chunks
                 batch = 0
 
-                for sql_command in self.sql_commands(f, buffer_size):
-                    with connection.cursor() as cursor:
-                        try:
-                            cursor.execute(sql_command)
-                            batch += 1
-                            if batch % 100 == 0:
-                                self.stdout.write(self.style.SUCCESS(f'transaction {batch} was executed'))
-                                logger.info(f'transaction {batch} was executed')
-                        except Exception as e:
-                            self.stdout.write(self.style.ERROR(f'Error executing transaction {batch}: {e}'))
-                            logger.error(f'Error executing transaction {batch}: {e}')
+                for sql_command in self.sql_commands(f):
+                    cursor = connection.cursor()
+                    try:
+                        cursor.execute(sql_command)
+                        batch += 1
+                        if batch % 100 == 0:
+                            self.stdout.write(self.style.SUCCESS(f'transaction {batch} was executed'))
+                            logger.info(f'transaction {batch} was executed')
+                    except Exception as e:
+                        self.stdout.write(self.style.ERROR(f'Error executing transaction {batch}: {e}'))
+                        logger.error(f'Error executing transaction {batch}: {e}')
+                    finally:
+                        cursor.close()
+                        connection.close()
 
             self.stdout.write(self.style.SUCCESS(f'Database populated successfully {script}'))
             logger.info(f'Database populated successfully {script}')
