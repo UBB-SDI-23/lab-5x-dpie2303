@@ -45,6 +45,8 @@ services:
     volumes:
       - ./certs:/etc/letsencrypt
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      # - ./nginx/default.conf.nonssl:/etc/nginx/conf.d/default.conf.nonssl
+
     depends_on:
       - server
 
