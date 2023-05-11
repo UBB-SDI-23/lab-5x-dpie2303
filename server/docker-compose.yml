@@ -48,12 +48,20 @@ services:
     depends_on:
       - server
 
-  certbot:
+certbot:
     image: certbot/certbot
     container_name: certbot
     volumes:
       - ./certs:/etc/letsencrypt
-    command: sh -c "certonly --webroot --webroot-path=/etc/letsencrypt --email necunos.6@gmail.com --agree-tos --no-eff-email --staging --force-renewal -d www.api.dobo-net.click && curl www.api.dobo-net.click"
-
+    command: 
+      - certonly 
+      - --webroot 
+      - --webroot-path=/etc/letsencrypt 
+      - --email necunos.6@gmail.com 
+      - --agree-tos 
+      - --no-eff-email 
+      - --staging 
+      - --force-renewal 
+      - -d www.api.dobo-net.click
     depends_on:
       - nginx
