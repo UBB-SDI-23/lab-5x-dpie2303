@@ -43,5 +43,12 @@ WHERE
 
 
     psql -h localhost -p 5432 -U dobo_admin -d music_db
+psql -h localhost -p 5432 -U dobo_admin -d music_db -f sql_scripts/tracks.sql
+
+psql -h localhost -p 5432 -U dobo_admin -d music_db -f sql_scripts/track_artist_colab.sql
+psql -h localhost -p 5432 -U dobo_admin -d music_db -f sql_scripts/create_indexes.sql
+psql -h localhost -p 5432 -U dobo_admin -d music_db -f sql_scripts/drop_duplicates.sql
 
 
+
+psql -h localhost -p 5432 -U dobo_admin -d music_db -c "SELECT COUNT(*) FROM music_trackartistcolab;"

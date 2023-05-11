@@ -11,7 +11,12 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from music.models import RecordCompany, Album, Track, Artist, TrackArtistColab
 from music.serializers import (RecordCompanySerializer,ArtistHighestPaidSerializer,StatisticsSerializer, TrackArtistColabCreateSerializer, AlbumSerializer, AlbumDetailSerializer,
-                          TrackSerializer,AlbumListSerializer,TrackListSerializer,TrackLightSerializer,ArtistListSerializer,RecordCompanyAverageSalesSerializer,ArtistDetailSerializer,ArtistAverageTracksPerAlbumSerializer, TrackArtistColabDetailSerializer , TrackDetailSerializer, ArtistSerializer, TrackArtistColabSerializer, TrackArtistColabCreateSerializer)
+                          TrackArtistColab,ArtistCreateSerializer,AlbumCreateSerializer,TrackCreateSerializer,AlbumListSerializer,TrackListSerializer,
+                          TrackLightSerializer,ArtistListSerializer,
+                          RecordCompanyAverageSalesSerializer,ArtistDetailSerializer,
+                          ArtistAverageTracksPerAlbumSerializer, TrackArtistColabDetailSerializer , 
+                          TrackDetailSerializer, ArtistSerializer, TrackArtistColabSerializer, 
+                          TrackArtistColabCreateSerializer)
 
 from math import ceil
 import logging
@@ -43,6 +48,8 @@ def custom_paginate(queryset, page, page_size):
 class TrackSearchAPIView(generics.ListAPIView):
     serializer_class = TrackLightSerializer
 
+
+
     def get_queryset(self):
         query = self.request.query_params.get('q', '')
         queryset = Track.objects.filter(Q(name__icontains=query))
@@ -65,7 +72,12 @@ class TrackSearchAPIView(generics.ListAPIView):
 
 
 class TrackList(generics.ListCreateAPIView):
-    serializer_class = TrackListSerializer
+
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TrackListSerializer
+        return TrackCreateSerializer
 
     def get_queryset(self):
         queryset = Track.objects.annotate(collaborations_count=Count('collaborations'))
@@ -87,10 +99,18 @@ class TrackList(generics.ListCreateAPIView):
 
 
 class AlbumList(generics.ListCreateAPIView):
-    serializer_class = AlbumListSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return AlbumListSerializer
+        return AlbumCreateSerializer
 
     def get_queryset(self):
         queryset = Album.objects.annotate(tracks_count=Count('tracks'))
+        min_copy_sales = self.request.query_params.get('min_copy_sales')
+
+        if min_copy_sales is not None:
+            queryset = queryset.filter(copy_sales__gte=min_copy_sales)
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -130,7 +150,11 @@ class TrackDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class ArtistList(generics.ListCreateAPIView):
-    serializer_class = ArtistListSerializer
+  
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return ArtistListSerializer
+        return ArtistCreateSerializer
 
     def get_queryset(self):
         queryset = Artist.objects.annotate(collaborations_count=Count('collaborations'))

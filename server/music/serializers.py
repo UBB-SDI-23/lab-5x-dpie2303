@@ -43,6 +43,36 @@ class AlbumListSerializer(serializers.ModelSerializer):
         return obj.tracks_count
 
 
+class TrackDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Track
+        fields = ['id','name', 'genres', 'description', 'bpm', 'released']
+
+
+class AlbumDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Album
+        fields = ['id','name', 'description', 'top_rank', 'copy_sales', 'release_date']
+
+
+
+
+class ArtistCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Artist
+        fields = '__all__'
+
+class TrackCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Track
+        fields = '__all__'
+
+class AlbumCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Album
+        fields = '__all__'
+
+
 
 
 class RecordCompanySerializer(serializers.ModelSerializer):
@@ -73,26 +103,12 @@ class ArtistDetailSerializer(serializers.ModelSerializer):
         model = Artist
         fields = '__all__'
 
-class AlbumDetailSerializer(serializers.ModelSerializer):
-    record_company = RecordCompanySerializer()
-
-    class Meta:
-        model = Album
-        fields = '__all__'
-
 
 class TrackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Track
         fields = '__all__'
 
-
-class TrackDetailSerializer(serializers.ModelSerializer):
-    album = AlbumDetailSerializer()
-
-    class Meta:
-        model = Track
-        fields = '__all__'
 
 
 class ArtistSerializer(serializers.ModelSerializer):
