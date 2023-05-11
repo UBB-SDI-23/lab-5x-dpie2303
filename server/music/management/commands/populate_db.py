@@ -30,7 +30,8 @@ class Command(BaseCommand):
             logger.error('Raw SQL not allowed in settings')
             return
         # 'tracks.sql', 'track_artist_colab.sql', 'drop_duplicates.sql', 'create_indexes.sql'
-        scripts = ['drop_indexes.sql', 'record_companies.sql', 'albums.sql', 'artists.sql']
+        # 'drop_indexes.sql', 'record_companies.sql', 'albums.sql', 'artists.sql'
+        scripts = ['tracks.sql', 'track_artist_colab.sql', 'drop_duplicates.sql', 'create_indexes.sql']
 
         for script in scripts:
             self.stdout.write(self.style.SUCCESS(f'Database started populating {script}'))
