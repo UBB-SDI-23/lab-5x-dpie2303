@@ -41,7 +41,6 @@ WHERE
     con.contype = 'f'
     AND conrelid::regclass::text LIKE 'music%';
 
-
     psql -h localhost -p 5432 -U dobo_admin -d music_db
 psql -h localhost -p 5432 -U dobo_admin -d music_db -f sql_scripts/tracks.sql
 
@@ -49,6 +48,6 @@ psql -h localhost -p 5432 -U dobo_admin -d music_db -f sql_scripts/track_artist_
 psql -h localhost -p 5432 -U dobo_admin -d music_db -f sql_scripts/create_indexes.sql
 psql -h localhost -p 5432 -U dobo_admin -d music_db -f sql_scripts/drop_duplicates.sql
 
-
+week 9. log in users should be able to add conf to see how many itmes they can see on page.
 
 psql -h localhost -p 5432 -U dobo_admin -d music_db -c "SELECT COUNT(*) FROM music_trackartistcolab;"

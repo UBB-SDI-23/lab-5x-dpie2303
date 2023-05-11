@@ -1,5 +1,4 @@
 FROM nginx:1.21
 
-COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+# COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 # COPY nginx/default.conf.nonssl /etc/nginx/conf.d/default.conf.nonssl
-CMD ["nginx"]
