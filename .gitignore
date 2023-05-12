@@ -13,10 +13,8 @@ server/sql_scripts/*.sql
 # ignore log files
 *.log
 
-server/etc
-!server/etc/nginx/templates-initiate/default.conf.template
-!server/etc/nginx/templates/default.conf.template
-!server/etc/crontab
+server/etc/letsencrypt
+
 
 
 # ignore __pycache__ directories
