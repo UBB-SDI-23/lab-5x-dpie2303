@@ -14,8 +14,9 @@ server/sql_scripts/*.sql
 *.log
 
 server/etc
-!server/etc/templates/default.comf.template
-!server/etc/templates-initiate/default.comf.template
+!server/etc/nginx/templates-initiate/default.conf.template
+!server/etc/nginx/templates/default.conf.template
+!server/etc/crontab
 
 
 # ignore __pycache__ directories
