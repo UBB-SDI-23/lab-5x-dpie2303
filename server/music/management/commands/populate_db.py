@@ -26,7 +26,7 @@ class Command(BaseCommand):
             return
         # 'drop_indexes.sql', 'record_companies.sql', 'albums.sql', 'artists.sql',
         #scripts = ['drop_duplicates.sql', 'create_indexes.sql']
-        scripts = ['drop_indexes.sql', 'record_companies.sql', 'albums.sql', 'artists.sql']    
+        scripts = ['drop_indexes.sql', 'record_companies.sql', 'albums.sql', 'artists.sql', 'tracks.sql', 'track_artist_colabs.sql', 'create_indexes.sql']    
 
         for script in scripts:
             self.stdout.write(self.style.SUCCESS(f'Database started populating {script}'))
