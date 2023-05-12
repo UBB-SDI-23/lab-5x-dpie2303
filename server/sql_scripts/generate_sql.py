@@ -144,19 +144,19 @@ def generate_track_artist_colab_sql(num_colabs,num_tracks,num_artists,batch_size
 
 
 if __name__ == "__main__":
-    # num_record_companies = 1000000
-    # num_albums = 1000000
-    # num_tracks = 10000000
-    # num_artists = 1000000
-    # num_colabs = 10000000
-    # batch_size = 1000
+    num_record_companies = 1000000
+    num_albums = 1000000
+    num_tracks = 10000000
+    num_artists = 1000000
+    num_colabs = 10000000
+    batch_size = 1000
 
-    num_record_companies = 5
-    num_albums = 5
-    num_tracks = 5
-    num_artists = 5
-    num_colabs = 10
-    batch_size = 2
+    # num_record_companies = 5
+    # num_albums = 5
+    # num_tracks = 5
+    # num_artists = 5
+    # num_colabs = 10
+    # batch_size = 2
 
     generate_record_companies_sql(num_record_companies,batch_size)
     print('record companies done')
