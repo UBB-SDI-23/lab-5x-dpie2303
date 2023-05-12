@@ -1,10 +1,11 @@
 BEGIN;
 
-WITH duplicates AS (
-    SELECT track_id, artist_id, 
-    ROW_NUMBER() OVER(PARTITION BY track_id, artist_id ORDER BY track_id, artist_id) AS row_num
+DELETE FROM music_trackartistcolab
+WHERE (track_id, artist_id) IN (
+    SELECT track_id, artist_id
     FROM music_trackartistcolab
-)
-DELETE FROM duplicates WHERE row_num > 1;
+    GROUP BY track_id, artist_id
+    HAVING COUNT(*) > 1
+);
 
 COMMIT;
