@@ -54,7 +54,7 @@ def generate_albums_sql(num_albums,num_record_companies,batch_size=1000):
             copy_sales = random.randint(1000,1000000)
             release_date = fake.date_between(start_date='-80y',end_date='today')
             record_company_id = random.randint(1,num_record_companies)
-            values_batch.append(f"({i+1}{i + 1},'{name}','{description}',{top_rank},{copy_sales},'{release_date}',{record_company_id})")
+            values_batch.append(f"({i+1},'{name}','{description}',{top_rank},{copy_sales},'{release_date}',{record_company_id})")
 
             if (i + 1) % batch_size == 0:
                 write_batch_inserts(f,'music_album','(id,name,description,top_rank,copy_sales,release_date,record_company_id)',values_batch)
