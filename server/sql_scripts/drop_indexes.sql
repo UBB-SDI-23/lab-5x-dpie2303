@@ -31,18 +31,24 @@ DROP INDEX IF EXISTS music_trackartistcolab_track_id_b773040b;
 
 
 
--- Drop primary key constraints
-ALTER TABLE music_album DROP CONSTRAINT IF EXISTS music_album_pkey;
-ALTER TABLE music_artist DROP CONSTRAINT IF EXISTS music_artist_pkey;
-ALTER TABLE music_recordcompany DROP CONSTRAINT IF EXISTS music_recordcompany_pkey;
-ALTER TABLE music_track DROP CONSTRAINT IF EXISTS music_track_pkey;
-ALTER TABLE music_trackartistcolab DROP CONSTRAINT IF EXISTS music_trackartistcolab_pkey;
-
-
 -- Drop foreign key constraints
 ALTER TABLE music_album DROP CONSTRAINT IF EXISTS music_album_record_company_id_441dcab6_fk_music_rec;
 ALTER TABLE music_track DROP CONSTRAINT IF EXISTS music_track_album_id_f2264d26_fk_music_album_id;
 ALTER TABLE music_trackartistcolab DROP CONSTRAINT IF EXISTS music_trackartistcolab_artist_id_f913e6b0_fk_music_artist_id;
 ALTER TABLE music_trackartistcolab DROP CONSTRAINT IF EXISTS music_trackartistcolab_track_id_b773040b_fk_music_track_id;
+
+
+-- Drop primary key constraints
+ALTER TABLE music_album DROP CONSTRAINT IF EXISTS music_album_pkey;
+ALTER TABLE music_album DROP COLUMN id;
+ALTER TABLE music_artist DROP CONSTRAINT IF EXISTS music_artist_pkey;
+ALTER TABLE music_artist DROP COLUMN id;
+ALTER TABLE music_recordcompany DROP CONSTRAINT IF EXISTS music_recordcompany_pkey;
+ALTER TABLE music_recordcompany DROP COLUMN id;
+ALTER TABLE music_track DROP CONSTRAINT IF EXISTS music_track_pkey;
+ALTER TABLE music_track DROP COLUMN id;
+ALTER TABLE music_trackartistcolab DROP CONSTRAINT IF EXISTS music_trackartistcolab_pkey;
+ALTER TABLE music_trackartistcolab DROP COLUMN id;
+
 
 COMMIT;
