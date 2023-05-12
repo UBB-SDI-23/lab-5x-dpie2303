@@ -34,7 +34,7 @@ services:
       - .env
     environment:
       - DJANGO_INTERACTIVE=no
-      
+
   nginx:
     container_name: nginx
     image: nginx:latest
@@ -44,6 +44,7 @@ services:
     depends_on:
       - server
     ports:
+      - 8000:8000
       - 80:80
       - 443:443
     volumes:
