@@ -13,6 +13,11 @@ server/sql_scripts/*.sql
 # ignore log files
 *.log
 
+server/etc
+!server/etc/templates/default.comf.template
+!server/etc/templates-initiate/default.comf.template
+
+
 # ignore __pycache__ directories
 __pycache__/
 
