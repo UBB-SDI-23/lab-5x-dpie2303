@@ -72,7 +72,7 @@ def generate_record_companies_sql(num_companies,batch_size=1000):
             founded_date = fake.date_between(start_date='-100y',end_date='today')
             headquarters_location = fake.city().replace("'","''")
             contact_email = fake.email().replace("'","''")
-            values_batch.append(f"({i+1}'{name}','{founded_date}','{headquarters_location}','{contact_email}')")
+            values_batch.append(f"({i+1}',{name}','{founded_date}','{headquarters_location}','{contact_email}')")
 
             if (i + 1) % batch_size == 0:
                 write_batch_inserts(f,'music_recordcompany','(id,name,founded_date,headquarters_location,contact_email)',values_batch)
@@ -91,7 +91,7 @@ def generate_artists_sql(num_artists,batch_size=1000):
             country_of_origin = fake.country().replace("'","''")
             sex = random.choice(['Male','Female','Other'])
             description = fake.text(max_nb_chars=60).replace("'","''")
-            values_batch.append(f"({i+1}'{name}','{country_of_origin}','{sex}','{description}','{birth_day}')")
+            values_batch.append(f"({i+1}',{name}','{country_of_origin}','{sex}','{description}','{birth_day}')")
 
             if (i + 1) % batch_size == 0:
                 write_batch_inserts(f,'music_artist','(id,name,country_of_origin,sex,description,birth_day)',values_batch)
@@ -112,7 +112,7 @@ def generate_tracks_sql(num_tracks,num_albums,batch_size=1000):
             bpm = random.randint(60,200)
             released = random.randint(1950,2022)
             album_id = random.randint(1,num_albums)
-            values_batch.append(f"({i+1}'{name}','{genres}','{description}',{bpm},{released},{album_id})")
+            values_batch.append(f"({i+1}',{name}','{genres}','{description}',{bpm},{released},{album_id})")
 
             if (i + 1) % batch_size == 0:
                 write_batch_inserts(f,'music_track','(id,name,genres,description,bpm,released,album_id)',values_batch)
@@ -131,7 +131,7 @@ def generate_track_artist_colab_sql(num_colabs,num_tracks,num_artists,batch_size
             artist_id = random.randint(1,num_artists)
             collaboration_type = random.choice(collaboration_types)
             royalty_percentage = round(random.uniform(0,100),2)
-            values_batch.append(f"({i+1}{track_id},{artist_id},'{collaboration_type}',{royalty_percentage})")
+            values_batch.append(f"({i+1},{track_id},{artist_id},'{collaboration_type}',{royalty_percentage})")
 
             if len(values_batch) % batch_size == 0:
                 write_batch_inserts(f,'music_trackartistcolab','(id,track_id,artist_id,collaboration_type,royalty_percentage)',values_batch)
