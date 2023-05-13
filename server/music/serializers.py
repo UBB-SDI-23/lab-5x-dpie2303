@@ -11,8 +11,6 @@ class ArtistListSerializer(serializers.ModelSerializer):
         model = Artist
         fields = ['id', 'name', 'country_of_origin', 'sex', 'description', 'birth_day', 'collaborations_count']
 
-    def get_collaborations_count(self, obj):
-        return obj.collaborations_count
 
 
 class TrackListSerializer(serializers.ModelSerializer):

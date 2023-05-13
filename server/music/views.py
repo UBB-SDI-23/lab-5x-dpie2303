@@ -160,7 +160,7 @@ class ArtistList(generics.ListCreateAPIView):
         return ArtistCreateSerializer
 
     def get_queryset(self):
-        queryset = Artist.objects.annotate(collaborations_count=Count('collaborations'))
+        queryset = Artist.objects.all()
         return queryset
 
     def list(self, request, *args, **kwargs):
