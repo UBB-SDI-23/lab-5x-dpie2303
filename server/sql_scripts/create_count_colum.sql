@@ -1,5 +1,4 @@
 BEGIN;
-UPDATE music_recordcompany
 UPDATE music_album
 SET tracks_count = (
     SELECT COUNT(*)
