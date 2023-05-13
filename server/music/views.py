@@ -4,17 +4,16 @@ from django.db.models.functions import Coalesce, Cast
 from collections import Counter
 from django.db.models import Case,Prefetch, When, FloatField, Q
 
-from rest_framework import generics
-from rest_framework import status
+from rest_framework import generics, views, serializers, status
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from music.models import RecordCompany, Album, Track, Artist, TrackArtistColab
 from music.serializers import (RecordCompanySerializer,ArtistHighestPaidSerializer,StatisticsSerializer, TrackArtistColabCreateSerializer, AlbumSerializer, AlbumDetailSerializer,
                           TrackArtistColab,ArtistCreateSerializer,AlbumCreateSerializer,TrackCreateSerializer,AlbumListSerializer,TrackListSerializer,
-                          TrackLightSerializer,ArtistListSerializer,
+                          TrackLightSerializer,ArtistListSerializer, ArtistAverageRoyaltySerializer,
                           RecordCompanyAverageSalesSerializer,ArtistDetailSerializer,
-                          ArtistAverageTracksPerAlbumSerializer, TrackArtistColabDetailSerializer , 
+                           TrackArtistColabDetailSerializer , RecordCompanyAverageSalesSerializer,
                           TrackDetailSerializer, ArtistSerializer, TrackArtistColabSerializer, 
                           TrackArtistColabCreateSerializer)
 
@@ -111,14 +110,15 @@ class AlbumList(generics.ListCreateAPIView):
         return AlbumCreateSerializer
 
     def get_queryset(self):
-        queryset = Album.objects.annotate(tracks_count=Count('tracks'))
+        queryset = Album.objects.all()
         min_copy_sales = self.request.query_params.get('min_copy_sales')
-
-        if min_copy_sales is not None:
+        logger.info(f"DEBUGGER {min_copy_sales}")
+        if min_copy_sales is not None and min_copy_sales != '':
             queryset = queryset.filter(copy_sales__gte=min_copy_sales)
         return queryset
 
     def list(self, request, *args, **kwargs):
+        
         queryset = self.get_queryset()
         page = int(request.query_params.get('page', 1))
         page_size = int(request.query_params.get('page_size', 10))
@@ -280,72 +280,32 @@ class MultipleStatistics(generics.ListCreateAPIView): # ListCreateAPIView Generi
 
 
 
-class ArtistAverageTracksPerAlbumReportView(generics.ListAPIView):
-    serializer_class = ArtistAverageTracksPerAlbumSerializer
+class ArtistAverageRoyaltyListView(views.APIView):
+    def get(self, request, *args, **kwargs):
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 10))
 
-    def get_queryset(self):
-        logger.info('Getting queryset for ArtistAverageTracksPerAlbumReportView')
         queryset = Artist.objects.annotate(
-            album_count=Count('collaborations__track__album', distinct=True),
-            track_count=Count('collaborations__track', distinct=True),
-        ).annotate(
-            average_tracks_per_album=Case(
-                When(album_count=0, then=0),
-                default=(1.0 * F('track_count')) / F('album_count'),
-                output_field=FloatField()
-            )
-        ).order_by('-average_tracks_per_album')
-        logger.info('Finished getting queryset for ArtistAverageTracksPerAlbumReportView')
-        return queryset
+            average_royalty=Avg('collaborations__royalty_percentage')
+        ).values('name', 'average_royalty')
 
-    def list(self, request, *args, **kwargs):
-        logger.info('Starting list method for ArtistAverageTracksPerAlbumReportView')
+        paginated_queryset, total_pages = custom_paginate(queryset, page, page_size)
 
-        queryset = self.get_queryset()
+        serializer = ArtistAverageRoyaltySerializer(paginated_queryset, many=True)
+
+        return Response({"total_pages": total_pages, "results": serializer.data})
+
+class RecordCompanyAverageSalesView(views.APIView):
+    def get(self, request, *args, **kwargs):
         page = int(request.query_params.get('page', 1))
         page_size = int(request.query_params.get('page_size', 10))
 
-        logger.info(f'Pagination parameters: page = {page}, page_size = {page_size}')
+        queryset = RecordCompany.objects.annotate(
+            avg_sales_per_album=Avg('albums__copy_sales')
+        ).values('name', 'avg_sales_per_album')
 
-        logger.info('Starting custom pagination')
-        current_page, total_pages = custom_paginate(queryset, page, page_size)
-        logger.info('Finished custom pagination')
+        paginated_queryset, total_pages = custom_paginate(queryset, page, page_size)
 
-        logger.info('Starting serialization')
-        serializer = self.get_serializer(current_page, many=True)
-        logger.info('Finished serialization')
-        
-        response = {
-            'artists': serializer.data,
-            'total_pages': total_pages,
-        }
+        serializer = RecordCompanyAverageSalesSerializer(paginated_queryset, many=True)
 
-        logger.info('Finished list method for ArtistAverageTracksPerAlbumReportView')
-
-    
-        return Response(response)
-
-
-class RecordCompanyAverageSalesReportView(generics.ListAPIView):
-    serializer_class = RecordCompanyAverageSalesSerializer
-
-    def get_queryset(self):
-        return RecordCompany.objects.annotate(
-            album_count=Count('albums', distinct=True),
-            total_copy_sales=Sum('albums__copy_sales'),
-        ).annotate(
-            average_sales_per_album=(1.0 * F('total_copy_sales')) / F('album_count')
-        ).order_by('-average_sales_per_album')
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        page = int(request.query_params.get('page', 1))
-        page_size = int(request.query_params.get('page_size', 10))
-
-        current_page, total_pages = custom_paginate(queryset, page, page_size)
-
-        serializer = self.get_serializer(current_page, many=True)
-        return Response({
-            'record_companies': serializer.data,
-            'total_pages': total_pages
-        })
+        return Response({"total_pages": total_pages, "results": serializer.data})

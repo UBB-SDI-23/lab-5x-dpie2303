@@ -7,6 +7,8 @@ const TrackDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [track, setTrack] = useState(null);
+  const [errors, setErrors] = useState({});
+
 
   const fetchTrack = useCallback(async () => {
     try {
@@ -22,6 +24,19 @@ const TrackDetail = () => {
   }, [id, fetchTrack]);
 
   const handleUpdate = async () => {
+
+   if (track.bpm  < 0) {
+      errors.bpm =  'BPM must be a non-negative integer.';
+   } 
+   if (track.released > new Date().getFullYear()) {
+     errors.released = 'The released year cannot be in the future.';
+   }
+
+   if (Object.keys(errors).length > 0) {
+     setErrors(errors);
+     return;
+   }
+
     try {
       await api.put(`/api/tracks/${id}/`, track);
       navigate('/tracks');
@@ -88,6 +103,8 @@ const TrackDetail = () => {
               name="bpm"
               value={track.bpm}
               onChange={(event) => setTrack({ ...track, bpm: event.target.value })}
+              error={errors.bpm ? true : false}
+              helperText={errors.bpm}
             />
           </Grid>
           <Grid item xs={12}>
@@ -98,6 +115,8 @@ const TrackDetail = () => {
               name="released"
               value={track.released}
               onChange={(event) => setTrack({ ...track, released: event.target.value })}
+              error={errors.released ? true : false}
+              helperText={errors.released}
             />
           </Grid>
           <Grid item xs={12}>

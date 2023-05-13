@@ -9,7 +9,7 @@ import { AppBar, Toolbar, Typography, Container, Button } from '@mui/material';
 import ArtistList from './components/Artist/ArtistList';
 import ArtistCreate from './components/Artist/ArtistCreate';
 import ArtistDetails from './components/Artist/ArtistDetails';
-import ArtistAverageTracksPerAlbumReport from './components/Statistics/ArtistAverageTracksPerAlbumReport';
+import StatsView from './components/Statistics/StatsView';
 import TrackList from './components/Track/TrackList';
 import TrackCreate from './components/Track/TrackCreate';
 import TrackDetails from './components/Track/TrackDetails';
@@ -89,7 +89,7 @@ function App() {
             <Route path="/albums" element={<AlbumList />} />
             <Route path="/albums/create" element={<AlbumCreate />} />
             <Route path="/albums/:id" element={<AlbumDetails />} />
-            <Route path="/statistics" element={<ArtistAverageTracksPerAlbumReport />} />
+            <Route path="/statistics" element={<StatsView />} />
           </Routes>
         </Container>
       </div>

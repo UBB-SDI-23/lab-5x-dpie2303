@@ -14,9 +14,9 @@ from music.views import (
     TrackArtistColabList,
     TrackArtistColabDetail,
     album_sales_query,
-    ArtistAverageTracksPerAlbumReportView,
-    RecordCompanyAverageSalesReportView,
+    RecordCompanyAverageSalesView,
     TrackSearchAPIView,
+    ArtistAverageRoyaltyListView,
 )
 
 urlpatterns = [
@@ -34,8 +34,8 @@ urlpatterns = [
     path('albums/sales_query/<int:sales>/', album_sales_query),
     path('highest_paid_artist/', HighestPaidArtist.as_view(), name='highest_paid_artist'),
     path('multiple_statistics/', MultipleStatistics.as_view(), name='multiple_statistics'),
-    path('artist_average_tracks_per_album/', ArtistAverageTracksPerAlbumReportView.as_view(), name='artist_average_tracks_per_album_report'),
-    path('record_company_average_sales/', RecordCompanyAverageSalesReportView.as_view(), name='record_company_average_sales_report'),
-    path('tracks/search/', TrackSearchAPIView.as_view(), name='track_search')
+    path('record_company_average_sales/', RecordCompanyAverageSalesView.as_view(), name='record_company_average_sales_report'),
+    path('tracks/search/', TrackSearchAPIView.as_view(), name='track_search'),
+    path('artist_average_royalty/', ArtistAverageRoyaltyListView.as_view(), name='artist_average_royalty_list_report'),
 
 ]

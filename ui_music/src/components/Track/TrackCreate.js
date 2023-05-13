@@ -15,22 +15,24 @@ const TrackCreate = () => {
     album: '',
   });
   const navigate = useNavigate();
+  const [errors, setErrors] = useState({});
+
 
   const handleChange = (event) => {
-    const { name, value } = event.target;
-    // check if the value should be an integer
-    if (name === 'bpm' || name === 'released' || name === 'album') {
-      // parse the value to an integer before setting the state
-      setTrack(prevTrack => ({ ...prevTrack, [name]: parseInt(value) }));
-    } else {
-      setTrack(prevTrack => ({ ...prevTrack, [name]: value }));
-    }
+    setTrack({ ...track, [event.target.name]: event.target.value });
   };
   
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (track.bpm < 0) {
-      toast.error('BPM must be a non-negative integer.');
+    if (track.bpm  < 0) {
+       errors.bpm =  'BPM must be a non-negative integer.';
+    } 
+    if (track.released > new Date().getFullYear()) {
+      errors.released = 'The released year cannot be in the future.';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setErrors(errors);
       return;
     }
     try {
@@ -79,6 +81,8 @@ const TrackCreate = () => {
               name="bpm"
               value={track.bpm}
               onChange={handleChange}
+              error={errors.bpm ? true : false}
+              helperText={errors.bpm}
             />
           </Grid>
           <Grid item xs={12}>
@@ -101,6 +105,8 @@ const TrackCreate = () => {
               InputLabelProps={{
                 shrink: true,
               }}
+              error={errors.released ? true : false}
+              helperText={errors.released}
             />
           </Grid>
           <Grid item xs={12}>

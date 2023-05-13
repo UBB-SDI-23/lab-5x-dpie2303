@@ -51,7 +51,7 @@ class AlbumDetailSerializer(serializers.ModelSerializer):
 class ArtistCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Artist
-        fields = '__all__'
+        fields = ['id', 'name', 'country_of_origin', 'sex', 'description', 'birth_day']
 
 class TrackCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -63,6 +63,15 @@ class AlbumCreateSerializer(serializers.ModelSerializer):
         model = Album
         fields = '__all__'
 
+
+class RecordCompanyAverageSalesSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    avg_sales_per_album = serializers.FloatField()
+
+
+class ArtistAverageRoyaltySerializer(serializers.Serializer):
+    name = serializers.CharField()
+    average_royalty = serializers.FloatField()
 
 
 
@@ -162,8 +171,3 @@ class TrackArtistColabCreateSerializer(serializers.ModelSerializer):
         except Track.DoesNotExist:
             raise serializers.ValidationError("Track not found")
         
-
-class RecordCompanyAverageSalesSerializer(serializers.Serializer):
-    record_company_id = serializers.IntegerField()
-    record_company_name = serializers.CharField()
-    average_sales_per_album = serializers.FloatField()

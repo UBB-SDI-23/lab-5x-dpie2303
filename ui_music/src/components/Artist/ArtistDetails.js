@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import api from '../api';
 import { Container, Typography, TextField, Button, Grid, List, ListItem, ListItemText, Pagination } from '@mui/material';
 
@@ -9,8 +10,13 @@ const ArtistDetails = () => {
     const [artist, setArtist] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
+    const [selectedTrack, setSelectedTrack] = useState(null);
+    const [collaborationType, setCollaborationType] = useState('');
+    const [royaltyPercentage, setRoyaltyPercentage] = useState('');
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
+    const [errors, setErrors] = useState({});
+
   
     const fetchArtist = useCallback(async () => {
       try {
@@ -26,10 +32,21 @@ const ArtistDetails = () => {
     }, [id, fetchArtist]);
 
     const handleUpdate = async () => {
+      const today = new Date();
+      const birthDay = new Date(artist.birth_day);
+      if(birthDay > today) {
+        errors.birth_day = "The birth day cannot be in the future.";
+      }
+      if (Object.keys(errors).length > 0) {
+        setErrors(errors);
+        return;
+      }
+
       try {
         await api.put(`/api/artists/${id}/`, artist);
         navigate('/artists');
       } catch (error) {
+        toast.error('Error updating artist.');
         console.error('Error updating artist:', error);
       }
     };
@@ -43,10 +60,9 @@ const ArtistDetails = () => {
       }
     };
 
-    async function handleSearch(query, page) {
-      setSearchQuery(query);
-
-      if (query) {
+    async function handleSearch(query, page, trackName = '') {
+      setSearchQuery(trackName || query);
+      if (query && !trackName) {
         try {
           const response = await api.get(`/api/tracks/search/?q=${query}&page=${page}&size=5`); // Limit results to 5
           setSearchResults(response.data.results);
@@ -64,19 +80,44 @@ const ArtistDetails = () => {
       handleSearch(searchQuery, value);
     };
 
-    const handleAddTrack = async (trackId) => {
-      const collaboration = {
-        track_id: trackId,
-        collaboration_type: 'Default',
-        royalty_percentage: 0,
-      };
+    const handleTrackSelection = (trackId, trackName) => {
+      setSelectedTrack(trackId);
+      handleSearch('', 1, trackName);
+    };
 
+    const handleAddTrack = async () => {
+      if (!selectedTrack) {
+        return;
+      }
+
+      let errors = {};
+      if (royaltyPercentage < 0) {
+        errors.royalty_percentage = "Royalty percentage must be a non-negative decimal.";
+      }
+      if (royaltyPercentage > 100) {
+        errors.royalty_percentage = "Royalty percentage must not be greater than 100.";
+      }
+      if (Object.keys(errors).length > 0) {
+        setErrors(errors);
+        return;
+      }
+  
+      const collaboration = {
+        track_id: selectedTrack,
+        collaboration_type: collaborationType,
+        royalty_percentage: parseFloat(royaltyPercentage),
+      };
+  
       try {
         await api.post(`/api/artists/${id}/tracks/`, collaboration);
         fetchArtist();
         setSearchQuery('');
         setSearchResults([]);
+        setSelectedTrack(null);
+        setCollaborationType('');
+        setRoyaltyPercentage('');
       } catch (error) {
+        toast.error('Error adding track to artist.')
         console.error('Error adding track to artist:', error);
       }
     };
@@ -143,6 +184,8 @@ const ArtistDetails = () => {
               InputLabelProps={{
                 shrink: true,
               }}
+              error={errors.birth_day ? true : false}
+              helperText={errors.birth_day}
             />
           </Grid>
             <Grid item xs={12}>
@@ -168,11 +211,8 @@ const ArtistDetails = () => {
             <Grid item xs={12}>
               <List>
                 {searchResults.map((track) => (
-                  <ListItem key={track.id}>
+                  <ListItem key={track.id} ButtonBase onClick={() => handleTrackSelection(track.id, track.name)}>
                     <ListItemText primary={track.name} />
-                    <Button onClick={() => handleAddTrack(track.id)} variant="contained" color="primary">
-                      Add Track
-                    </Button>
                   </ListItem>
                 ))}
               </List>
@@ -180,6 +220,38 @@ const ArtistDetails = () => {
                 <Pagination count={totalPages} page={page} onChange={handlePageChange} />
               }
             </Grid>
+            {selectedTrack && (
+              <>
+                <Grid item xs={6}>
+                  <TextField
+                    required
+                    fullWidth
+                    label="Collaboration Type"
+                    name="collaboration_type"
+                    value={collaborationType}
+                    onChange={(event) => setCollaborationType(event.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField
+                    required
+                    fullWidth
+                    label="Royalty Percentage"
+                    name="royalty_percentage"
+                    type="number"
+                    value={royaltyPercentage}
+                    onChange={(event) => setRoyaltyPercentage(event.target.value)}
+                    error={errors.royalty_percentage ? true : false}
+                    helperText={errors.royalty_percentage}
+                  />
+              </Grid>
+                <Grid item xs={12}>
+                  <Button onClick={handleAddTrack} variant="contained" color="primary">
+                    Add Collaboration
+                  </Button>
+                </Grid>
+              </>
+            )}
           </Grid>
         </form>
       </Container>

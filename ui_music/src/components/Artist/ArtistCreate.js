@@ -25,8 +25,7 @@ const ArtistCreate = () => {
     const today = new Date();
     const birthDay = new Date(artist.birth_day);
     if(birthDay > today) {
-      alert("The birth day cannot be in the future.");
-      return;
+      errors.birth_day =  "The birth day cannot be in the future.";
     }
     if (Object.keys(errors).length > 0) {
       setErrors(errors);
@@ -100,8 +99,8 @@ const ArtistCreate = () => {
               InputLabelProps={{
                 shrink: true,
               }}
-              error={errors.copy_sales ? true : false}
-              helperText={errors.copy_sales}
+              error={errors.birth_day ? true : false}
+              helperText={errors.birth_day}
             />
           </Grid>
           <Grid item xs={12}>

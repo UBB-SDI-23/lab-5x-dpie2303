@@ -16,7 +16,8 @@ const AlbumCard = ({ album }) => {
         <Typography variant="subtitle1">Top Rank: {album.top_rank}</Typography>
         <Typography variant="subtitle1">Copy Sales: {album.copy_sales}</Typography>
         <Typography variant="subtitle1">Release Date: {album.release_date}</Typography>
-        <Typography variant="subtitle1">Record Company: {album.record_company.name}</Typography>
+        <Typography variant="subtitle1">Top Rank: {album.top_rank}</Typography>
+        <Typography variant="subtitle1">Description: {album.description}</Typography>
         <Typography variant="subtitle1">Tracks Count: {album.tracks_count}</Typography>
       </CardContent>
       <CardActions>
