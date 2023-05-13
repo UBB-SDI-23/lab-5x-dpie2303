@@ -80,6 +80,6 @@ class Migration(migrations.Migration):
             name='collaborations_count',
             field=models.PositiveIntegerField(default=0),
         ),
-        migrations.RunPython(update_counts),
+        # migrations.RunPython(update_counts),
 
     ]
