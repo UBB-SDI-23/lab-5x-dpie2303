@@ -4,7 +4,7 @@ SET tracks_count = (
     SELECT COUNT(*)
     FROM music_track
     WHERE music_track.album_id = music_album.id
-)
+);
 COMMIT;
 
 BEGIN;
@@ -14,7 +14,7 @@ SET collaborations_count = (
     SELECT COUNT(*)
     FROM music_trackartistcolab
     WHERE music_trackartistcolab.artist_id = music_artist.id
-)
+);
 
 COMMIT;
 
@@ -25,7 +25,7 @@ SET albums_count = (
     SELECT COUNT(*)
     FROM music_album
     WHERE music_album.record_company_id = music_recordcompany.id
-)
+);
 
 COMMIT;
 
@@ -37,6 +37,6 @@ SET collaborations_count = (
     SELECT COUNT(*)
     FROM music_trackartistcolab
     WHERE music_trackartistcolab.track_id = music_track.id
-)
+);
 
 COMMIT;
