@@ -29,6 +29,11 @@ class Album(models.Model):
         RecordCompany.objects.filter(id=self.record_company_id).update(albums_count=F('albums_count') - 1)
         super().delete(*args, **kwargs)
 
+    def clean(self):
+        if self.copy_sales < 0:
+            raise ValidationError("Copy sales must be a non-negative integer.")
+
+
 
 class Track(models.Model):
     name = models.CharField(max_length=255, db_index=True) # Add index
@@ -51,8 +56,13 @@ class Track(models.Model):
         super().delete(*args, **kwargs)
 
     def clean(self):
+        from datetime import datetime
+        current_year = datetime.now().year
+        if self.released > current_year:
+            raise ValidationError("The released year cannot be in the future.")
         if self.bpm < 0:
-            raise ValidationError(_("BPM must be a non-negative integer."))
+            raise ValidationError("BPM must be a non-negative integer.")
+
         
 
 
@@ -64,6 +74,15 @@ class Artist(models.Model):
     birth_day = models.DateField()
     collaborations_count = models.PositiveIntegerField(default=0)
 
+
+    def clean(self):
+        from datetime import date
+        if self.birth_day > date.today():
+            raise ValidationError("The birth day cannot be in the future.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 class TrackArtistColab(models.Model):
     track = models.ForeignKey(Track, on_delete=models.CASCADE, related_name='collaborations', db_index=True) # Add index

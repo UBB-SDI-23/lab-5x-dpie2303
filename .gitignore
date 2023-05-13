@@ -15,6 +15,7 @@ server/sql_scripts/*.sql
 
 server/etc/letsencrypt
 
+server/backup/
 backup/
 server/staticfiles/
 
