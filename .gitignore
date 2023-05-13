@@ -10,6 +10,7 @@ server/sql_scripts/*.sql
 !server/sql_scripts/create_indexes.sql
 !server/sql_scripts/drop_duplicates.sql
 !server/sql_scripts/usefull_queryes.sql
+!server/sql_scripts/create_count_colum.sql
 # ignore log files
 *.log
 
