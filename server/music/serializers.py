@@ -5,7 +5,6 @@ from music.models import RecordCompany, Album, Track, Artist, TrackArtistColab
 
 
 class ArtistListSerializer(serializers.ModelSerializer):
-    collaborations_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Artist

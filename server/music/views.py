@@ -161,6 +161,7 @@ class ArtistList(generics.ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Artist.objects.all()
+        
         return queryset
 
     def list(self, request, *args, **kwargs):
