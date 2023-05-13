@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import api from '../api';
 import { Container, Typography, TextField, Button, Grid } from '@mui/material';
 
@@ -13,13 +14,25 @@ const AlbumCreate = () => {
     record_company: '',
   });
   const navigate = useNavigate();
+  const [errors, setErrors] = useState({});
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    let errors = {};
+    if (album.copy_sales < 0) {
+      errors.copy_sales = "Copy sales must be a non-negative integer.";
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      setErrors(errors);
+      return;
+    }
     try {
       await api.post('/api/albums/', album);
       navigate('/albums');
     } catch (error) {
+      toast.error('Error creating album.');
       console.error('Error creating album:', error);
     }
   };
@@ -72,6 +85,8 @@ const AlbumCreate = () => {
               name="copy_sales"
               value={album.copy_sales}
               onChange={handleChange}
+              error={errors.copy_sales ? true : false}
+              helperText={errors.copy_sales}
             />
           </Grid>
           <Grid item xs={12}>

@@ -1,42 +1,44 @@
 BEGIN;
-UPDATE music_album
-SET tracks_count = (
-    SELECT COUNT(*)
+WITH album_tracks AS (
+    SELECT album_id, COUNT(*) as track_count
     FROM music_track
-    WHERE music_track.album_id = music_album.id
-);
+    GROUP BY album_id
+)
+UPDATE music_album 
+SET tracks_count = album_tracks.track_count
+FROM album_tracks
+WHERE music_album.id = album_tracks.album_id;
 COMMIT;
-
 BEGIN;
-
-UPDATE music_artist
-SET collaborations_count = (
-    SELECT COUNT(*)
+WITH artist_collaborations AS (
+    SELECT artist_id, COUNT(*) as collaboration_count
     FROM music_trackartistcolab
-    WHERE music_trackartistcolab.artist_id = music_artist.id
-);
-
+    GROUP BY artist_id
+)
+UPDATE music_artist 
+SET collaborations_count = artist_collaborations.collaboration_count
+FROM artist_collaborations
+WHERE music_artist.id = artist_collaborations.artist_id;
 COMMIT;
-
 BEGIN;
-
-UPDATE music_recordcompany
-SET albums_count = (
-    SELECT COUNT(*)
+WITH record_company_albums AS (
+    SELECT record_company_id, COUNT(*) as album_count
     FROM music_album
-    WHERE music_album.record_company_id = music_recordcompany.id
-);
-
+    GROUP BY record_company_id
+)
+UPDATE music_recordcompany 
+SET albums_count = record_company_albums.album_count
+FROM record_company_albums
+WHERE music_recordcompany.id = record_company_albums.record_company_id;
 COMMIT;
-
-
 BEGIN;
-
-UPDATE music_track
-SET collaborations_count = (
-    SELECT COUNT(*)
+WITH track_collaborations AS (
+    SELECT track_id, COUNT(*) as collaboration_count
     FROM music_trackartistcolab
-    WHERE music_trackartistcolab.track_id = music_track.id
-);
-
+    GROUP BY track_id
+)
+UPDATE music_track
+SET collaborations_count = track_collaborations.collaboration_count
+FROM track_collaborations
+WHERE music_track.id = track_collaborations.track_id;
 COMMIT;

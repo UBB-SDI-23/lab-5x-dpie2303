@@ -55,6 +55,8 @@ class TrackSearchAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         query = self.request.query_params.get('q', '')
+        if query == '':
+            query=None;
         queryset = Track.objects.filter(Q(name__icontains=query))
         return queryset
 
@@ -83,7 +85,7 @@ class TrackList(generics.ListCreateAPIView):
         return TrackCreateSerializer
 
     def get_queryset(self):
-        queryset = Track.objects.annotate(collaborations_count=Count('collaborations'))
+        queryset = Track.objects.all()
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -161,7 +163,7 @@ class ArtistList(generics.ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Artist.objects.all()
-        
+
         return queryset
 
     def list(self, request, *args, **kwargs):

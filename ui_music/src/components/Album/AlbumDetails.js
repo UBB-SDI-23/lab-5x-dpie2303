@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
+import { toast } from 'react-toastify';
 import { Container, Typography, TextField, Button, Grid } from '@mui/material';
 
 const AlbumDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [album, setAlbum] = useState(null);
+  const [errors, setErrors] = useState({});
+
 
   const fetchAlbum = useCallback(async () => {
     try {
@@ -22,10 +25,21 @@ const AlbumDetail = () => {
   }, [id, fetchAlbum]);
 
   const handleUpdate = async () => {
+    let errors = {};
+    if (album.copy_sales < 0) {
+      errors.copy_sales = "Copy sales must be a non-negative integer.";
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      setErrors(errors);
+      return;
+    }
+
     try {
       await api.put(`/api/albums/${id}/`, album);
       navigate('/albums');
     } catch (error) {
+      toast.error('Error updating album.');
       console.error('Error updating album:', error);
     }
   };
@@ -102,6 +116,8 @@ const AlbumDetail = () => {
                 name="copy_sales"
                 value={album.copy_sales}
                 onChange={(event) => setAlbum({ ...album, copy_sales: event.target.value })}
+                error={errors.copy_sales ? true : false}
+                helperText={errors.copy_sales}
             />
             </Grid>
           <Grid item xs={12}>

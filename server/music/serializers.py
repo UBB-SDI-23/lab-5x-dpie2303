@@ -13,14 +13,11 @@ class ArtistListSerializer(serializers.ModelSerializer):
 
 
 class TrackListSerializer(serializers.ModelSerializer):
-    collaborations_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Track
         fields = ['id', 'name', 'genres', 'description', 'bpm', 'released', 'album', 'collaborations_count']
 
-    def get_collaborations_count(self, obj):
-        return obj.collaborations_count
 
 class TrackLightSerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,14 +27,11 @@ class TrackLightSerializer(serializers.ModelSerializer):
 
 
 class AlbumListSerializer(serializers.ModelSerializer):
-    tracks_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Album
         fields = ['id', 'name', 'description', 'top_rank', 'copy_sales', 'release_date', 'record_company', 'tracks_count']
 
-    def get_tracks_count(self, obj):
-        return obj.tracks_count
 
 
 class TrackDetailSerializer(serializers.ModelSerializer):

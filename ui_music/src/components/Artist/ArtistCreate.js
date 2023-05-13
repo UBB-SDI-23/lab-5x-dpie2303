@@ -1,6 +1,7 @@
 // src/components/ArtistCreate.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import api from '../api';
 import { Container, Typography, TextField, Button, Grid } from '@mui/material';
 
@@ -13,17 +14,30 @@ const ArtistCreate = () => {
     birth_day: '',
   });
   const navigate = useNavigate();
+  const [errors, setErrors] = useState({});
+
 
   const handleChange = (event) => {
     setArtist({ ...artist, [event.target.name]: event.target.value });
   };
 
   const handleSubmit = async (event) => {
+    const today = new Date();
+    const birthDay = new Date(artist.birth_day);
+    if(birthDay > today) {
+      alert("The birth day cannot be in the future.");
+      return;
+    }
+    if (Object.keys(errors).length > 0) {
+      setErrors(errors);
+      return;
+    }
     event.preventDefault();
     try {
       await api.post('/api/artists/', artist);
       navigate('/artists');
     } catch (error) {
+      toast.error('Error creating artist.');
       console.error('Error creating artist:', error);
     }
   };
@@ -86,6 +100,8 @@ const ArtistCreate = () => {
               InputLabelProps={{
                 shrink: true,
               }}
+              error={errors.copy_sales ? true : false}
+              helperText={errors.copy_sales}
             />
           </Grid>
           <Grid item xs={12}>
