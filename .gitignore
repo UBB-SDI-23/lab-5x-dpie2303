@@ -15,7 +15,8 @@ server/sql_scripts/*.sql
 
 server/etc/letsencrypt
 
-
+backup/
+server/staticfiles/
 
 # ignore __pycache__ directories
 __pycache__/

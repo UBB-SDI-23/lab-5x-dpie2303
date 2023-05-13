@@ -21,24 +21,27 @@ from music.serializers import (RecordCompanySerializer,ArtistHighestPaidSerializ
 from math import ceil
 import logging
 
+from django.db import connection
+from django.db.models import Max
+
 logger = logging.getLogger(__name__)
 
 
 def custom_paginate(queryset, page, page_size):
-    logger.info('Counting total items')
-    total_items = queryset.count()
-    logger.info('Finished counting total items')
-
-    logger.info('Calculating total pages')
-    total_pages = ceil(total_items / page_size)
-    logger.info('Finished calculating total pages')
-
     start = (page - 1) * page_size
     end = start + page_size
 
-    logger.info('Starting queryset slicing')
+    # Approximate count
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT reltuples FROM pg_class WHERE relname = %s", [queryset.model._meta.db_table])
+        row = cursor.fetchone()
+        if row:
+            total_items = int(row[0])
+        else:
+            total_items = queryset.count()  # Fallback to actual count if no result from above
+
+    total_pages = ceil(total_items / page_size)
     sliced_queryset = queryset[start:end]
-    logger.info('Finished queryset slicing')
 
     return sliced_queryset, total_pages
 
@@ -172,7 +175,9 @@ class ArtistList(generics.ListCreateAPIView):
         return Response({
             'artists': serializer.data,
             'total_pages': total_pages
-        })
+        })  
+
+
     
 class ArtistDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Artist.objects.all()
