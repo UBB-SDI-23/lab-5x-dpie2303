@@ -80,9 +80,6 @@ class Artist(models.Model):
         if self.birth_day > date.today():
             raise ValidationError("The birth day cannot be in the future.")
 
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        super().save(*args, **kwargs)
 
 class TrackArtistColab(models.Model):
     track = models.ForeignKey(Track, on_delete=models.CASCADE, related_name='collaborations', db_index=True) # Add index
