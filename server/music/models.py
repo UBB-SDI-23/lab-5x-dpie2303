@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.db.models import F
+from datetime import date
 
 
 class RecordCompany(models.Model):

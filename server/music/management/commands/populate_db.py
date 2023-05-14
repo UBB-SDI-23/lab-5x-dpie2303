@@ -29,7 +29,6 @@ class Command(BaseCommand):
         
         scripts = ['drop_indexes.sql', 'record_companies.sql', 'albums.sql', 'artists.sql', 'tracks.sql', 'track_artist_colab.sql' , 'create_indexes.sql', 'drop_duplicates.sql']    
 
-
         for script in scripts:
             self.stdout.write(self.style.SUCCESS(f'Database started populating {script}'))
             logger.info(f'Database started populating {script}')

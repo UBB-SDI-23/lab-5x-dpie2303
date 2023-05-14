@@ -239,47 +239,6 @@ def album_sales_query(request, sales):
 
 
 
-class HighestPaidArtist(generics.ListAPIView):
-    royalties_expression = ExpressionWrapper(
-        Cast(Coalesce('collaborations__royalty_percentage', 0), DecimalField()) *
-        Cast(Coalesce('collaborations__track__album__copy_sales', 0), DecimalField()),
-        output_field=DecimalField()
-    )
-
-    queryset = Artist.objects.annotate(
-        total_royalties=Sum(royalties_expression)
-    ).order_by('-total_royalties')
-
-    serializer_class = ArtistHighestPaidSerializer
-
-class MultipleStatistics(generics.ListCreateAPIView): # ListCreateAPIView GenericAPIView
-    serializer_class = StatisticsSerializer
-
-    def get(self, request):
-        average_copy_sales = Album.objects.aggregate(avg_copy_sales=Avg('copy_sales'))['avg_copy_sales']
-        top_genres = Track.objects.values_list('genres', flat=True)
-        top_genres = [genre for genre_list in top_genres for genre in genre_list.split(',')]
-        top_genres = [item[0] for item in Counter(top_genres).most_common(3)]
-
-        record_companies = RecordCompany.objects.all()
-        record_company_sales = {
-            record_company.name: record_company.albums.aggregate(
-                total_sales=Sum('copy_sales')
-            )['total_sales']
-            for record_company in record_companies
-        }
-
-        stats = {
-            'average_copy_sales': average_copy_sales,
-            'top_genres': top_genres,
-            'record_company_sales': record_company_sales
-        }
-
-        serializer = StatisticsSerializer(stats)
-        return Response(serializer.data)
-
-
-
 class ArtistAverageRoyaltyListView(views.APIView):
     def get(self, request, *args, **kwargs):
         page = int(request.query_params.get('page', 1))

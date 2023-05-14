@@ -29,6 +29,8 @@ SECRET_KEY = 'django-insecure-y#%tq*_rkh5r-30a*xn6wn_ny23wizu6arn*@a%a@6o&=ri4y%
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+#author
+AUTH_USER_MODEL = 'accounts.CustomUser'
 
 ALLOWED_HOSTS = ['54.172.39.129', '*']
 
@@ -36,13 +38,14 @@ ALLOWED_HOSTS = ['54.172.39.129', '*']
 # Application definition
 
 INSTALLED_APPS = [
+    'music.apps.MusicConfig',
+    'accounts.apps.AccountsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'music.apps.MusicConfig',
     'corsheaders',
     'rest_framework',
     'drf_yasg',
@@ -66,10 +69,8 @@ MIDDLEWARE = [
 CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'music_library.urls'
-# AUTH_USER_MODEL = 'music.CustomUser'
 
-
-# CORS_ALLOWED_ORIGINS = [
+# CORS_ALLOWED_ORIGINS =
 #     "https://your-production-domain.com",
 # ]
 
