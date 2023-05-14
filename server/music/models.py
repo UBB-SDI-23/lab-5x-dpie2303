@@ -2,6 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.db.models import F
 
+
 class RecordCompany(models.Model):
     name = models.CharField(max_length=255, db_index=True) # Add index
     founded_date = models.DateField()

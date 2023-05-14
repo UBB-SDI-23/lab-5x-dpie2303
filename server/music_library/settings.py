@@ -66,7 +66,7 @@ MIDDLEWARE = [
 CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'music_library.urls'
-AUTH_USER_MODEL = 'music.CustomUser'
+# AUTH_USER_MODEL = 'music.CustomUser'
 
 
 # CORS_ALLOWED_ORIGINS = [
