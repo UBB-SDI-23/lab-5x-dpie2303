@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile.db
     volumes:
-      - ./data:/var/lib/postgresql/data
+      - ./backup/data_1/data:/var/lib/postgresql/data
       - ./postgresql.conf:/etc/postgresql/postgresql.conf
       - ./sql_scripts:/sql_scripts
     environment:
