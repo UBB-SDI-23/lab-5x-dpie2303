@@ -2,7 +2,38 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.db.models import F
 from datetime import date
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    bio = models.TextField(blank=True, null=True, max_length=500)
+    location = models.CharField(max_length=50, blank=True,null=True)
+    birth_date = models.DateField(null=True, blank=True)
+    gender = models.CharField(max_length=10, blank=True,null=True)
+
+    MARITAL_STATUS_CHOICES = [
+        ('S', 'Single'),
+        ('M', 'Married'),
+        ('D', 'Divorced'),
+        ('W', 'Widowed'),
+    ]
+
+    marital_status = models.CharField(max_length=1, choices=MARITAL_STATUS_CHOICES, blank=True)
+
+    def clean(self):
+        # Bio length validation
+        if len(self.bio) > 500:
+            raise ValidationError("Bio cannot be more than 500 characters.")
+        
+        # Birth date validation
+        if self.birth_date and self.birth_date > date.today():
+            raise ValidationError("Birth date cannot be in the future.")
+        
+        # Marital status validation
+        if self.marital_status not in [choice[0] for choice in self.MARITAL_STATUS_CHOICES]:
+            raise ValidationError("Invalid marital status.")
 
 class RecordCompany(models.Model):
     name = models.CharField(max_length=255, db_index=True) # Add index
@@ -10,6 +41,7 @@ class RecordCompany(models.Model):
     headquarters_location = models.CharField(max_length=255)
     contact_email = models.EmailField()
     albums_count = models.PositiveIntegerField(default=0)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
 
 class Album(models.Model):
@@ -20,6 +52,8 @@ class Album(models.Model):
     release_date = models.DateField()
     record_company = models.ForeignKey(RecordCompany, on_delete=models.CASCADE, related_name='albums', db_index=True) # Add index
     tracks_count = models.PositiveIntegerField(default=0)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+   
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
@@ -45,6 +79,7 @@ class Track(models.Model):
     released = models.IntegerField()
     album = models.ForeignKey(Album, on_delete=models.CASCADE, related_name='tracks', db_index=True) # Add index
     collaborations_count = models.PositiveIntegerField(default=0)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
 
     def save(self, *args, **kwargs):
@@ -75,6 +110,7 @@ class Artist(models.Model):
     description = models.CharField(max_length=255)
     birth_day = models.DateField()
     collaborations_count = models.PositiveIntegerField(default=0)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
 
     def clean(self):
@@ -88,6 +124,7 @@ class TrackArtistColab(models.Model):
     artist = models.ForeignKey(Artist, on_delete=models.CASCADE, related_name='collaborations', db_index=True) # Add index
     collaboration_type = models.CharField(max_length=255)
     royalty_percentage = models.DecimalField(max_digits=5, decimal_places=2)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     
 
     def save(self, *args, **kwargs):
