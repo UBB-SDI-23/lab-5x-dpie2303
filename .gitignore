@@ -11,6 +11,7 @@ server/sql_scripts/*.sql
 !server/sql_scripts/drop_duplicates.sql
 !server/sql_scripts/usefull_queryes.sql
 !server/sql_scripts/create_count_colum.sql
+!server/sql_scripts/asign_user_to_data.sql
 # ignore log files
 *.log
 
