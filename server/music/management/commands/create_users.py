@@ -13,8 +13,20 @@ class Command(BaseCommand):
         User = get_user_model()  # Get the current User model
         faker = Faker()
 
+        user = User.objects.get(id=9891)
+
+        # Creating the UserProfile object
+        UserProfile.objects.create(
+            user=user,
+            bio=faker.text(max_nb_chars=100),
+            location=faker.city(),
+            birth_date=faker.date_of_birth(),
+            gender=faker.random_element(elements=('M', 'F')),
+            marital_status=faker.random_element(elements=('S', 'M', 'D', 'W'))
+        )
+
         # Create admin users
-        for i in range(10):
+        for i in range(1,10):
             user = User.objects.create_user(username=f'admin_{i}', password='Password.123', email=f'admin_{i}@email.com',is_admin=True)
             UserProfile.objects.create(user=user, bio=faker.text(max_nb_chars=100), location=faker.city(), birth_date=faker.date_of_birth(), gender=faker.random_element(elements=('M', 'F')), marital_status=faker.random_element(elements=('S', 'M', 'D', 'W')))
 

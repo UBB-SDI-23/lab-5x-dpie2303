@@ -6,6 +6,11 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
+class ConfirmationCode(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    code = models.CharField(max_length=20)
+    expiry_date = models.DateTimeField()
+
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(blank=True, null=True, max_length=500)
@@ -13,12 +18,6 @@ class UserProfile(models.Model):
     birth_date = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=10, blank=True,null=True)
 
-
-
-class ConfirmationCode(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    code = models.CharField(max_length=20)
-    expiry_date = models.DateTimeField()
 
     MARITAL_STATUS_CHOICES = [
         ('S', 'Single'),
