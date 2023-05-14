@@ -16,6 +16,9 @@ import TrackDetails from './components/Track/TrackDetails';
 import AlbumList from './components/Album/AlbumList';
 import AlbumCreate from './components/Album/AlbumCreate';
 import AlbumDetails from './components/Album/AlbumDetails';
+import Register from './components/Auth/Register';
+import Login from './components/Auth/Login';
+import UserProfile from './components/Auth/UserProfile';
 
 function App() {
   return (
@@ -31,6 +34,9 @@ function App() {
             >
               Music Library
             </Typography>
+            <Button color="inherit" component={Link} to="/register">Register</Button>
+            <Button color="inherit" component={Link} to="/login">Login</Button>
+            <Button color="inherit" component={Link} to="/userprofile">Profile</Button>
           </Toolbar>
         </AppBar>
         <Container>
@@ -90,6 +96,9 @@ function App() {
             <Route path="/albums/create" element={<AlbumCreate />} />
             <Route path="/albums/:id" element={<AlbumDetails />} />
             <Route path="/statistics" element={<StatsView />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/userprofile" element={<UserProfile />} />
           </Routes>
         </Container>
       </div>

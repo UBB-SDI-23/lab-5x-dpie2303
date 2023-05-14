@@ -2,11 +2,52 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.utils.crypto import get_random_string
 from django.contrib.auth.password_validation import validate_password
-from music.models import RecordCompany, Album,ConfirmationCode, Track, Artist, TrackArtistColab
+from music.models import RecordCompany,UserProfile, Album,ConfirmationCode, Track, Artist, TrackArtistColab
 from django.contrib.auth import get_user_model
 
 
 CustomUser = get_user_model()
+
+
+
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'email', 'is_regular', 'is_moderator', 'is_admin']
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    class Meta:
+        model = UserProfile
+        fields = ['username', 'bio', 'location', 'birth_date', 'gender', 'marital_status']
+
+class AdminUserProfileSerializer(serializers.ModelSerializer):
+    user = CustomUserSerializer()
+
+    class Meta:
+        model = UserProfile
+        fields = ['user', 'bio', 'location', 'birth_date', 'gender', 'marital_status']
+
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop('user', {})
+        user = instance.user
+
+        instance.bio = validated_data.get('bio', instance.bio)
+        instance.location = validated_data.get('location', instance.location)
+        instance.birth_date = validated_data.get('birth_date', instance.birth_date)
+        instance.gender = validated_data.get('gender', instance.gender)
+        instance.marital_status = validated_data.get('marital_status', instance.marital_status)
+        instance.save()
+
+        user.username = user_data.get('username', user.username)
+        user.email = user_data.get('email', user.email)
+        user.is_regular = user_data.get('is_regular', user.is_regular)
+        user.is_moderator = user_data.get('is_moderator', user.is_moderator)
+        user.is_admin = user_data.get('is_admin', user.is_admin)
+        user.save()
+
+        return instance
+    
 
 class RegisterSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(

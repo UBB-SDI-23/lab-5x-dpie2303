@@ -9,3 +9,4 @@ drf_yasg
 django-debug-toolbar
 whitenoise==5.3.0
 faker
+djangorestframework_simplejwt
