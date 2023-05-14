@@ -32,6 +32,15 @@ DEBUG = True
 #author
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+     #   'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+
+    )
+}
+
 ALLOWED_HOSTS = ['54.172.39.129', '*']
 
 

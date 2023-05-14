@@ -1,0 +1,20 @@
+def custom_paginate_v1(queryset, page, page_size):
+    start = (page - 1) * page_size
+    end = start + page_size
+
+    # Use raw SQL for pagination
+    raw_query = f"SELECT * FROM {queryset.model._meta.db_table} LIMIT {page_size} OFFSET {start}"
+    sliced_queryset = queryset.raw(raw_query)
+
+    # Approximate count
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT reltuples FROM pg_class WHERE relname = %s", [queryset.model._meta.db_table])
+        row = cursor.fetchone()
+        if row:
+            total_items = int(row[0])
+        else:
+            total_items = queryset.count()  # Fallback to actual count if no result from above
+
+    total_pages = ceil(total_items / page_size)
+
+    return sliced_queryset, total_pages
