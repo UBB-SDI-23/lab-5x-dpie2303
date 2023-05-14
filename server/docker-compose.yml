@@ -23,15 +23,13 @@ services:
     command: >
       bash -c "set -e &&
             #  python manage.py non_interactive_makemigrations &&
-             # python manage.py migrate &&
+            #  python manage.py migrate 
             #  python manage.py populate_db &&
             #   python manage.py collectstatic --no-input &&
             #  gunicorn -b 0.0.0.0:8000 music_library.wsgi &&
             #   python manage.py runserver 0.0.0.0:8000
                gunicorn -b 0.0.0.0:8000 music_library.wsgi"
-
-
-
+            
     depends_on:
       - db
     ports:
