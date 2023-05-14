@@ -13,6 +13,13 @@ class UserProfile(models.Model):
     birth_date = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=10, blank=True,null=True)
 
+
+
+class ConfirmationCode(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    code = models.CharField(max_length=20)
+    expiry_date = models.DateTimeField()
+
     MARITAL_STATUS_CHOICES = [
         ('S', 'Single'),
         ('M', 'Married'),
