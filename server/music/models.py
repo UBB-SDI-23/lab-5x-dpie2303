@@ -3,12 +3,14 @@ from django.core.exceptions import ValidationError
 from django.db.models import F
 from datetime import date
 from django.contrib.auth import get_user_model
+
+
 User = get_user_model()
 
 
 class ConfirmationCode(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    code = models.CharField(max_length=20)
+    code = models.CharField(max_length=50)
     expiry_date = models.DateTimeField()
 
 class UserProfile(models.Model):

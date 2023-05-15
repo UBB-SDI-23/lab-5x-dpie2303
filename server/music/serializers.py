@@ -13,7 +13,7 @@ CustomUser = get_user_model()
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'is_regular', 'is_moderator', 'is_admin']
+        fields = ['username', 'email', 'is_regular', 'is_moderator', 'is_admin', 'id']
 
 class UserProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
@@ -79,10 +79,6 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         user.set_password(validated_data['password'])
         user.save()
-
-        # create confirmation code
-        code = get_random_string(length=32)
-        ConfirmationCode.objects.create(user=user, code=code)
         
         return user
 
