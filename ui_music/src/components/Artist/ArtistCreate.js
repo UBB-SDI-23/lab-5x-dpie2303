@@ -1,9 +1,10 @@
 // src/components/ArtistCreate.js
-import React, { useState } from 'react';
+import React, { useState,useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import api from '../api';
 import { Container, Typography, TextField, Button, Grid } from '@mui/material';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const ArtistCreate = () => {
   const [artist, setArtist] = useState({
@@ -12,9 +13,11 @@ const ArtistCreate = () => {
     sex: '',
     description: '',
     birth_day: '',
+    user: 0,
   });
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
+  const { user,isAuthenticated} = useContext(AuthContext);
 
 
   const handleChange = (event) => {
@@ -24,6 +27,12 @@ const ArtistCreate = () => {
   const handleSubmit = async (event) => {
     const today = new Date();
     const birthDay = new Date(artist.birth_day);
+
+    if(!isAuthenticated){
+      toast.error('Error creating artist. you need to login.');
+      errors.user = "You must be logged in to create an artist.";
+    }
+
     if(birthDay > today) {
       errors.birth_day =  "The birth day cannot be in the future.";
     }
@@ -31,6 +40,7 @@ const ArtistCreate = () => {
       setErrors(errors);
       return;
     }
+    artist.user = user.id;
     event.preventDefault();
     try {
       await api.post('/api/artists/', artist);

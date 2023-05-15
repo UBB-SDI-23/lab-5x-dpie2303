@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState ,useContext} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import api from '../api';
 import { Container, Typography, TextField, Button, Grid } from '@mui/material';
+import { AuthContext } from '../../contexts/AuthContext';
+
 
 const AlbumCreate = () => {
+  const { user,isAuthenticated} = useContext(AuthContext);
+
   const [album, setAlbum] = useState({
     name: '',
     description: '',
@@ -12,22 +16,31 @@ const AlbumCreate = () => {
     copy_sales: '',
     release_date: '',
     record_company: '',
+    user: 0,
   });
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
 
 
+
   const handleSubmit = async (event) => {
     event.preventDefault();
+  
     let errors = {};
+    if(!isAuthenticated){
+      toast.error('Error creating album.');
+      errors.user = "You must be logged in to create an album.";
+    }
+    
     if (album.copy_sales < 0) {
       errors.copy_sales = "Copy sales must be a non-negative integer.";
     }
-    
+
     if (Object.keys(errors).length > 0) {
       setErrors(errors);
       return;
     }
+    album.user = user.id;
     try {
       await api.post('/api/albums/', album);
       navigate('/albums');

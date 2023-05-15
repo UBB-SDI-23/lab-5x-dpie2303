@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback,useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import api from '../api';
 import { Container, Typography, TextField, Button, Grid, List, ListItem, ListItemText, Pagination } from '@mui/material';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const ArtistDetails = () => {
     const { id } = useParams();
@@ -16,6 +17,7 @@ const ArtistDetails = () => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [errors, setErrors] = useState({});
+    const { user, isAuthenticated } = useContext(AuthContext);
 
   
     const fetchArtist = useCallback(async () => {
@@ -89,8 +91,11 @@ const ArtistDetails = () => {
       if (!selectedTrack) {
         return;
       }
+      if(!isAuthenticated){
+        toast.error('Error creating track. you need to login.');
+        errors.user = "You must be logged in to create an track.";
+      }
 
-      let errors = {};
       if (royaltyPercentage < 0) {
         errors.royalty_percentage = "Royalty percentage must be a non-negative decimal.";
       }
@@ -106,9 +111,11 @@ const ArtistDetails = () => {
         track_id: selectedTrack,
         collaboration_type: collaborationType,
         royalty_percentage: parseFloat(royaltyPercentage),
+        user : user.id
       };
-  
-      try {
+
+      console.log(collaboration);
+       try {
         await api.post(`/api/artists/${id}/tracks/`, collaboration);
         fetchArtist();
         setSearchQuery('');

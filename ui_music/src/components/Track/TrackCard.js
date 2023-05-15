@@ -18,6 +18,12 @@ const TrackCard = ({ track }) => {
         <Typography variant="subtitle1">BPM: {track.bpm}</Typography>
         <Typography variant="subtitle1">Released: {track.released}</Typography>
         <Typography variant="subtitle1">Collaborations: {track.collaborations_count}</Typography>
+        {track.user && (
+          <Typography variant="subtitle1">
+            Added by: 
+            <Link to={`/userprofile/${track.user.id}`}>{track.user.username}</Link>
+          </Typography>
+        )}
       </CardContent>
       <CardActions>
         <Button component={Link} to={`/tracks/${track.id}`} variant="outlined">

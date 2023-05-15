@@ -19,6 +19,12 @@ const AlbumCard = ({ album }) => {
         <Typography variant="subtitle1">Top Rank: {album.top_rank}</Typography>
         <Typography variant="subtitle1">Description: {album.description}</Typography>
         <Typography variant="subtitle1">Tracks Count: {album.tracks_count}</Typography>
+        {album.user && (
+          <Typography variant="subtitle1">
+            Added by: 
+            <Link to={`/userprofile/${album.user.id}`}>{album.user.username}</Link>
+          </Typography>
+        )}
       </CardContent>
       <CardActions>
         <Button component={Link} to={`/albums/${album.id}`} variant="outlined">
