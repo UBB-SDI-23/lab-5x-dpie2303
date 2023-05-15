@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useForm } from 'react-hook-form';
 import api from '../api';
-import { Container, Typography, TextField, Button, Grid, MenuItem } from '@mui/material';
+import { Container, Typography, TextField, Grid, MenuItem } from '@mui/material';
 
 const UserProfile = () => {
   const [userProfile, setUserProfile] = useState({
@@ -16,7 +16,7 @@ const UserProfile = () => {
   });
 
   const navigate = useNavigate();
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm();
+  const {  handleSubmit, setValue, formState: { errors } } = useForm();
   const maritalStatusOptions = [
     { value: 'S', label: 'Single' },
     { value: 'M', label: 'Married' },
@@ -40,7 +40,7 @@ const UserProfile = () => {
       .catch(error => {
         console.error('Error fetching user profile:', error);
       });
-  }, [userId]);
+  }, [userId, setValue]);
 
   const onSubmit = async (data) => {
     let errors = {};

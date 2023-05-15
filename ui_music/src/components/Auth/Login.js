@@ -1,7 +1,6 @@
 import  { useContext , useState} from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import api from '../api';
 import { AuthContext } from '../../contexts/AuthContext'; 
 
@@ -10,7 +9,7 @@ import { Container, Typography, TextField, Button, Grid } from '@mui/material';
 const Login = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const { setIsAuthenticated, setUser, setToken } = useContext(AuthContext);
-  const [serverErrors, setServerErrors] = useState({});
+  const [ setServerErrors] = useState({});
   const navigate = useNavigate(); // Use useNavigate instead of Navigate
 
 

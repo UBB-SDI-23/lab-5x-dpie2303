@@ -7,7 +7,7 @@ import { Container, Typography, TextField, Button, Grid } from '@mui/material';
 
 const  Register = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
-  const [serverErrors, setServerErrors] = useState({});
+  const [ setServerErrors] = useState({});
   const navigate = useNavigate(); // Use useNavigate instead of Navigate
 
   const onSubmit = data => {
