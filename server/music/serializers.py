@@ -17,9 +17,26 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
+    albums_count = serializers.SerializerMethodField()
+    tracks_count = serializers.SerializerMethodField()
+    artists_count = serializers.SerializerMethodField()
+    collaborations_count = serializers.SerializerMethodField()
+
     class Meta:
         model = UserProfile
-        fields = ['username', 'bio', 'location', 'birth_date', 'gender', 'marital_status']
+        fields = ['username', 'bio', 'location', 'birth_date', 'gender', 'marital_status', 'albums_count', 'tracks_count', 'artists_count', 'collaborations_count']
+
+    def get_albums_count(self, obj):
+        return Album.objects.filter(user=obj.user).count()
+
+    def get_tracks_count(self, obj):
+        return Track.objects.filter(user=obj.user).count()
+
+    def get_artists_count(self, obj):
+        return Artist.objects.filter(user=obj.user).count()
+
+    def get_collaborations_count(self, obj):
+        return TrackArtistColab.objects.filter(user=obj.user).count()
 
 class AdminUserProfileSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer()
@@ -83,20 +100,33 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
+class UserLightSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username']
+
 
 class ArtistListSerializer(serializers.ModelSerializer):
+    user = UserLightSerializer(read_only=True)
 
     class Meta:
         model = Artist
-        fields = ['id', 'name', 'country_of_origin', 'sex', 'description', 'birth_day', 'collaborations_count']
-
-
+        fields = ['user','id', 'name', 'country_of_origin', 'sex', 'description', 'birth_day', 'collaborations_count']
 
 class TrackListSerializer(serializers.ModelSerializer):
+    user = UserLightSerializer(read_only=True)
 
     class Meta:
         model = Track
-        fields = ['id', 'name', 'genres', 'description', 'bpm', 'released', 'album', 'collaborations_count']
+        fields = ['user', 'id', 'name', 'genres', 'description', 'bpm', 'released', 'album', 'collaborations_count']
+
+
+class AlbumListSerializer(serializers.ModelSerializer):
+    user = UserLightSerializer(read_only=True)
+
+    class Meta:
+        model = Album
+        fields = ['user', 'id', 'name', 'description', 'top_rank', 'copy_sales', 'release_date', 'record_company', 'tracks_count']
 
 
 class TrackLightSerializer(serializers.ModelSerializer):
@@ -105,12 +135,6 @@ class TrackLightSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'released']
 
 
-
-class AlbumListSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Album
-        fields = ['id', 'name', 'description', 'top_rank', 'copy_sales', 'release_date', 'record_company', 'tracks_count']
 
 
 
@@ -126,12 +150,10 @@ class AlbumDetailSerializer(serializers.ModelSerializer):
         fields = ['id','name', 'description', 'top_rank', 'copy_sales', 'release_date']
 
 
-
-
 class ArtistCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Artist
-        fields = ['id', 'name', 'country_of_origin', 'sex', 'description', 'birth_day']
+        fields = ['id', 'name', 'country_of_origin', 'sex', 'description', 'birth_day', 'user']
 
 class TrackCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -210,7 +232,7 @@ class TrackArtistColabCreateSerializer(serializers.ModelSerializer):
     track_id = serializers.IntegerField(write_only=True)
     class Meta:
         model = TrackArtistColab
-        fields = ('track_id', 'collaboration_type', 'royalty_percentage')
+        fields = ('track_id', 'collaboration_type', 'royalty_percentage','user')
 
 class TrackArtistColabDetailSerializer(serializers.ModelSerializer):
     track = TrackDetailSerializer()

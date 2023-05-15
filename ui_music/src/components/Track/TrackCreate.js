@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState ,useContext} from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { Container, Typography, TextField, Button, Grid } from '@mui/material';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const TrackCreate = () => {
   const [track, setTrack] = useState({
@@ -13,16 +14,21 @@ const TrackCreate = () => {
     bpm: 0,
     released: 0,
     album: '',
+    user: 0,
   });
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
-
+  const { user, isAuthenticated } = useContext(AuthContext);
 
   const handleChange = (event) => {
     setTrack({ ...track, [event.target.name]: event.target.value });
   };
   
   const handleSubmit = async (event) => {
+    if(!isAuthenticated){
+      toast.error('Error creating track. you need to login.');
+      errors.user = "You must be logged in to create an track.";
+    }
     event.preventDefault();
     if (track.bpm  < 0) {
        errors.bpm =  'BPM must be a non-negative integer.';
@@ -30,11 +36,12 @@ const TrackCreate = () => {
     if (track.released > new Date().getFullYear()) {
       errors.released = 'The released year cannot be in the future.';
     }
-
     if (Object.keys(errors).length > 0) {
       setErrors(errors);
       return;
     }
+    track.user = user.id;
+    console.log(track);
     try {
       // no need to parse to int again, track.bpm is already an integer
       await api.post('/api/tracks/', track);

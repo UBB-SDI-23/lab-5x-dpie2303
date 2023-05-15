@@ -101,14 +101,15 @@ class IsAuthenticatedWithJWT(permissions.BasePermission):
 class UserProfileView(views.APIView):
     permission_classes = [IsOwnerOrReadOnly, IsAuthenticatedWithJWT]
 
-    def get(self, request,pk=None):
-        
-        user_profile = UserProfile.objects.get(user_id=pk)
+    def get(self, request, pk=None):
+        user = CustomUser.objects.get(pk=pk)
+        user_profile = UserProfile.objects.get(user=user)
         serializer = UserProfileSerializer(user_profile)
         return Response(serializer.data)
 
-    def put(self, request):
-        user_profile = UserProfile.objects.get(user=request.user)
+    def put(self, request, pk):
+        user = CustomUser.objects.get(pk=pk)
+        user_profile = UserProfile.objects.get(user=user)
         serializer = UserProfileSerializer(user_profile, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -370,12 +371,13 @@ class AddTrackToArtist(generics.ListCreateAPIView):
         if serializer.is_valid():
             track_id = serializer.validated_data['track_id']
             track = Track.objects.get(pk=track_id)
-
+            user= CustomUser.objects.get(pk=request.data['user'])
             track_artist_colab = TrackArtistColab(
                 track=track,
                 artist=artist,
                 collaboration_type=serializer.validated_data['collaboration_type'],
-                royalty_percentage=serializer.validated_data['royalty_percentage']
+                royalty_percentage=serializer.validated_data['royalty_percentage'],
+                user=user,
             )
             track_artist_colab.save()
 

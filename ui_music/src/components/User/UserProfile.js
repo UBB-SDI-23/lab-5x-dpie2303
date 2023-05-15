@@ -142,13 +142,60 @@ const UserProfile = () => {
                   {option.label}
                 </MenuItem>
               ))}
-            </TextField>
-          </Grid>
-          <Grid item xs={12}>
-            <Button type="submit" variant="contained" color="primary">
-              Save
-            </Button>
-          </Grid>
+              </TextField>
+                      </Grid>
+                      <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Albums Count"
+                value={userProfile.albums_count}
+                InputProps={{
+                  readOnly: true,
+                }}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Tracks Count"
+            value={userProfile.tracks_count}
+            InputProps={{
+              readOnly: true,
+            }}
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Artists Count"
+            value={userProfile.artists_count}
+            InputProps={{
+              readOnly: true,
+            }}
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Collaborations Count"
+            value={userProfile.collaborations_count}
+            InputProps={{
+              readOnly: true,
+            }}
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+        </Grid>
         </Grid>
       </form>
     </Container>

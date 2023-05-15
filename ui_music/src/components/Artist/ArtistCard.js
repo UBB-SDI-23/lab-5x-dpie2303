@@ -19,6 +19,12 @@ const ArtistCard = ({ artist }) => {
         <Typography variant="subtitle1">Description: {artist.description}</Typography>
         <Typography variant="subtitle1">Birthday: {artist.birth_day}</Typography>
         <Typography variant="subtitle1">Colaborations: {artist.collaborations_count}</Typography>
+        {artist.user && (
+          <Typography variant="subtitle1">
+            Added by: 
+            <Link to={`/userprofile/${artist.user.id}`}>{artist.user.username}</Link>
+          </Typography>
+        )}
       </CardContent>
       <CardActions>
         <Button component={Link} to={`/artists/${artist.id}`} variant="outlined">
