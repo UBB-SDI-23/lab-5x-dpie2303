@@ -1,245 +1,140 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import api from '../api';
-import { Container, Typography, TextField, Button, Grid, List, ListItem, ListItemText, Pagination } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import {
+  BrowserRouter as Router,
+  Route,
+  Link,
+  Routes,
+} from 'react-router-dom';
+import { AppBar, Toolbar, Typography, Container, Button } from '@mui/material';
+import ArtistList from './components/Artist/ArtistList';
+import ArtistCreate from './components/Artist/ArtistCreate';
+import ArtistDetails from './components/Artist/ArtistDetails';
+import StatsView from './components/Statistics/StatsView';
+import TrackList from './components/Track/TrackList';
+import TrackCreate from './components/Track/TrackCreate';
+import TrackDetails from './components/Track/TrackDetails';
+import AlbumList from './components/Album/AlbumList';
+import AlbumCreate from './components/Album/AlbumCreate';
+import AlbumDetails from './components/Album/AlbumDetails';
+import Register from './components/Auth/Register';
+import Login from './components/Auth/Login';
+import UserProfile from './components/Auth/UserProfile';
+import { AuthContext } from './contexts/AuthContext';  // import AuthContext
 
-const ArtistDetails = () => {
-    const { id } = useParams();
-    const navigate = useNavigate();
-    const [artist, setArtist] = useState(null);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [searchResults, setSearchResults] = useState([]);
-    const [selectedTrack, setSelectedTrack] = useState(null);
-    const [collaborationType, setCollaborationType] = useState('');
-    const [royaltyPercentage, setRoyaltyPercentage] = useState('');
-    const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(0);
-    const [errors, setErrors] = useState({});
+function App() {
+  const [auth, setAuth] = useState({ username: null, token: null });
 
-  
-    const fetchArtist = useCallback(async () => {
-      try {
-        const response = await api.get(`/api/artists/${id}/`);
-        setArtist(response.data);
-      } catch (error) {
-        console.error('Error fetching artist:', error);
-      }
-    }, [id]);
-  
-    useEffect(() => {
-      fetchArtist();
-    }, [id, fetchArtist]);
-
-    const handleUpdate = async () => {
-      const today = new Date();
-      const birthDay = new Date(artist.birth_day);
-      if(birthDay > today) {
-        errors.birth_day = "The birth day cannot be in the future.";
-      }
-      if (Object.keys(errors).length > 0) {
-        setErrors(errors);
-        return;
-      }
-
-      try {
-        await api.put(`/api/artists/${id}/`, artist);
-        navigate('/artists');
-      } catch (error) {
-        toast.error('Error updating artist.');
-        console.error('Error updating artist:', error);
-      }
-    };
-
-    const handleDelete = async () => {
-      try {
-        await api.delete(`/api/artists/${id}/`);
-        navigate('/artists');
-      } catch (error) {
-        console.error('Error deleting artist:', error);
-      }
-    };
-
-    async function handleSearch(query, page) {
-      setSearchQuery(trackName || query);
-
-      if (query && !trackName) {
-        try {
-          const response = await api.get(`/api/tracks/search/?q=${query}&page=${page}&size=5`); // Limit results to 5
-          setSearchResults(response.data.results);
-          setTotalPages(response.data.total_pages);
-        } catch (error) {
-          console.error('Error searching for tracks:', error);
-        }
-      } else {
-        setSearchResults([]);
-      }
+  useEffect(() => {
+    const token = localStorage.getItem('access');
+    const username = localStorage.getItem('username');
+    if (token && username) {
+      setAuth({ username, token });
     }
+  }, []);
 
-    const handlePageChange = (event, value) => {
-      setPage(value);
-      handleSearch(searchQuery, value);
-    };
+  const handleLogout = () => {
+    localStorage.removeItem('access');
+    localStorage.removeItem('username');
+    setAuth({ username: null, token: null });
+  };
 
-    const handleTrackSelection = (trackId, trackName) => {
-      setSelectedTrack(trackId);
-      handleSearch('', 1, trackName);
-    };
-
-    const handleAddTrack = async () => {
-      if (!selectedTrack) {
-        return;
-      }
-  
-      const collaboration = {
-        track_id: selectedTrack,
-        collaboration_type: collaborationType,
-        royalty_percentage: parseInt(royaltyPercentage, 10),
-      };
-  
-      try {
-        await api.post(`/api/artists/${id}/tracks/`, collaboration);
-        fetchArtist();
-        setSearchQuery('');
-        setSearchResults([]);
-        setSelectedTrack(null);
-        setCollaborationType('');
-        setRoyaltyPercentage('');
-      } catch (error) {
-        console.error('Error adding track to artist:', error);
-      }
-    };
-
-    if (!artist) {
-      return <div>Loading...</div>;
-    }
-
-    return (
-      <Container>
-        <Typography variant="h4" gutterBottom>
-          Artist Details
-        </Typography>
-        <form>
-          <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <TextField
-              required
-              fullWidth
-              label="Name"
-              name="name"
-              value={artist.name}
-              onChange={(event) => setArtist({ ...artist, name: event.target.value })}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              required
-              fullWidth
-              label="Country of Origin"
-              name="country_of_origin"
-              value={artist.country_of_origin}
-              onChange={(event) => setArtist({ ...artist, country_of_origin: event.target.value })}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              required
-              fullWidth
-              label="Sex"
-              name="sex"
-              value={artist.sex}
-              onChange={(event) => setArtist({ ...artist, sex: event.target.value })}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Description"
-              name="description"
-              value={artist.description}
-              onChange={(event) => setArtist({ ...artist, description: event.target.value })}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              required
-              fullWidth
-              label="Birthday"
-              type="date"
-              name="birth_day"
-              value={artist.birth_day}
-              onChange={(event) => setArtist({ ...artist, birth_day: event.target.value })}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              error={errors.birth_day ? true : false}
-              helperText={errors.birth_day}
-            />
-          </Grid>
-            <Grid item xs={12}>
-              <Button onClick={handleUpdate} variant="contained" color="primary">
-                Update Artist
-              </Button>
-              <Button onClick={handleDelete} variant="contained" color="secondary">
-                Delete Artist
-              </Button>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Search for a track"
-                name="track_search"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-              />
-              <Button onClick={() => handleSearch(searchQuery, 1)} variant="contained" color="primary">
-              Search
-              </Button>
-            </Grid>
-            <Grid item xs={12}>
-              <List>
-                {searchResults.map((track) => (
-                  <ListItem key={track.id} ButtonBase onClick={() => handleTrackSelection(track.id, track.name)}>
-                    <ListItemText primary={track.name} />
-                  </ListItem>
-                ))}
-              </List>
-              {searchResults.length > 0 && 
-                <Pagination count={totalPages} page={page} onChange={handlePageChange} />
-              }
-            </Grid>
-            {selectedTrack && (
-              <>
-                <Grid item xs={6}>
-                  <TextField
-                    fullWidth
-                    label="Collaboration Type"
-                    name="collaboration_type"
-                    value={collaborationType}
-                    onChange={(event) => setCollaborationType(event.target.value)}
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <TextField
-                    fullWidth
-                    label="Royalty Percentage"
-                    name="royalty_percentage"
-                    type="number"
-                    value={royaltyPercentage}
-                    onChange={(event) => setRoyaltyPercentage(event.target.value)}
-                  />
-              </Grid>
-                <Grid item xs={12}>
-                  <Button onClick={handleAddTrack} variant="contained" color="primary">
-                    Add Collaboration
+  return (
+    <AuthContext.Provider value={{ auth, setAuth }}>
+      <Router>
+        <div>
+          <AppBar position="static">
+            <Toolbar>
+              <Typography
+                variant="h5"
+                sx={{ flexGrow: 1, cursor: "pointer" }}
+                component={Link}
+                to="/"
+              >
+                Music Library
+              </Typography>
+              {!auth.token && (
+                <>
+                  <Button color="inherit" component={Link} to="/register">Register</Button>
+                  <Button color="inherit" component={Link} to="/login">Login</Button>
+                </>
+              )}
+              {auth.token && (
+                <>
+                  <Typography variant="subtitle1" sx={{ marginRight: 2 }}>
+                    Hello, {auth.username}
+                  </Typography>
+                  <Button color="inherit" component={Link} to="/userprofile">Profile</Button>
+                  <Button color="inherit" onClick={handleLogout}>Logout</Button>
+                </>
+              )}
+            </Toolbar>
+            </AppBar>
+        <Container>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <div>
+                  <Typography variant="h4" gutterBottom>
+                    Welcome to Music Library
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    component={Link}
+                    to="/artists"
+                    sx={{ marginRight: 2 }}
+                  >
+                    Artists
                   </Button>
-                </Grid>
-              </>
-            )}
-          </Grid>
-        </form>
-      </Container>
-    );
-};
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    component={Link}
+                    to="/tracks"
+                    sx={{ marginRight: 2 }}
+                  >
+                    Tracks
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    component={Link}
+                    to="/albums"
+                    sx={{ marginRight: 2 }}
+                  >
+                    Albums
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    component={Link}
+                    to="/statistics"
+                  >
+                    Statistics
+                  </Button>
+                </div>
+              }
+            />
+            <Route path="/artists" element={<ArtistList />} />
+            <Route path="/artists/create" element={<ArtistCreate />} />
+            <Route path="/artists/:id" element={<ArtistDetails />} />
+            <Route path="/tracks" element={<TrackList />} />
+            <Route path="/tracks/create" element={<TrackCreate />} />
+            <Route path="/tracks/:id" element={<TrackDetails />} />
+            <Route path="/albums" element={<AlbumList />} />
+            <Route path="/albums/create" element={<AlbumCreate />} />
+            <Route path="/albums/:id" element={<AlbumDetails />} />
+            <Route path="/statistics" element={<StatsView />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/userprofile" element={<UserProfile />} />
+          </Routes>
+        </Container>
+      </div>
+      </Router>
+    </AuthContext.Provider>
+  );
+}
 
-export default ArtistDetails;
+export default App;

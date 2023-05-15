@@ -21,7 +21,8 @@ from music.views import (
     ConfirmRegistrationView,
     AdminUserProfileView,
     CustomUserView,
-    UserProfileView
+    UserProfileView,
+    UserSearchView
 )
 
 urlpatterns = [
@@ -46,4 +47,5 @@ urlpatterns = [
     path('token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path('admin/profiles/', AdminUserProfileView.as_view(), name='admin_profiles'),
     path('profile/<int:pk>/', UserProfileView.as_view(), name='user_profile'),
+    path('user/<str:query>/', UserSearchView.as_view(), name='user_search')
 ]

@@ -16,6 +16,8 @@ from music.serializers import (RecordCompanySerializer, TrackArtistColabCreateSe
                           TrackArtistColabCreateSerializer,CustomUserSerializer,AdminUserProfileSerializer)
 
 from math import ceil
+from rest_framework_simplejwt.tokens import UntypedToken
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 import logging
 from django.db import connection
 from datetime import timedelta
@@ -69,10 +71,35 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
 
         # Write permissions are only allowed to the owner of the object.
         return obj == request.user
+    
+class IsAuthenticatedWithJWT(permissions.BasePermission):
+    def has_permission(self, request, view):
+        # Allow access if the HTTP method is 'GET'
+        if request.method == 'GET':
+            return True
 
+        # Perform JWT authentication for other methods
+        auth_header = request.META.get('HTTP_AUTHORIZATION', '').split()
+
+        if len(auth_header) == 2 and auth_header[0].lower() == 'bearer':
+            token = auth_header[1]
+            try:
+                # Validate the token
+                valid_token = UntypedToken(token)
+                # Try to find a user with the id contained in the token
+                User = get_user_model()
+                user = User.objects.filter(id=valid_token['user_id']).first()
+                # If the user exists, the token is valid, hence return True
+                if user:
+                    return True
+            except (InvalidToken, TokenError):
+                pass
+
+        # If we are here, the user is not authenticated with a valid JWT
+        return False
 
 class UserProfileView(views.APIView):
-    permission_classes = [IsOwnerOrReadOnly]
+    permission_classes = [IsOwnerOrReadOnly, IsAuthenticatedWithJWT]
 
     def get(self, request,pk=None):
         
@@ -88,12 +115,24 @@ class UserProfileView(views.APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request):
-        user_profile = UserProfile.objects.get(user=request.user)
-        user_profile.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class UserSearchView(views.APIView):
+
+    def get(self, request, query):
+        try:
+            user = None
+            if query.isdigit():  # Check if query is a number (i.e., a user ID)
+                user = CustomUser.objects.get(pk=query)
+            else:  # If not, treat it as a username
+                user = CustomUser.objects.get(username=query)
+
+            if user:
+                serializer = CustomUserSerializer(user)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+                
+        except CustomUser.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 class CustomUserView(views.APIView):
     permission_classes = [IsOwnerOrReadOnly]
