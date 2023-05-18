@@ -9,7 +9,7 @@ User = get_user_model()
 
 
 class ConfirmationCode(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     code = models.CharField(max_length=50)
     expiry_date = models.DateTimeField()
 
@@ -48,7 +48,6 @@ class RecordCompany(models.Model):
     founded_date = models.DateField()
     headquarters_location = models.CharField(max_length=255)
     contact_email = models.EmailField()
-    albums_count = models.PositiveIntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
 
@@ -59,19 +58,8 @@ class Album(models.Model):
     copy_sales = models.IntegerField(db_index=True) # Add index
     release_date = models.DateField()
     record_company = models.ForeignKey(RecordCompany, on_delete=models.CASCADE, related_name='albums', db_index=True) # Add index
-    tracks_count = models.PositiveIntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
    
-
-    def save(self, *args, **kwargs):
-        is_new = self.pk is None
-        super().save(*args, **kwargs)
-        if is_new:
-            RecordCompany.objects.filter(id=self.record_company_id).update(albums_count=F('albums_count') + 1)
-            
-    def delete(self, *args, **kwargs):
-        RecordCompany.objects.filter(id=self.record_company_id).update(albums_count=F('albums_count') - 1)
-        super().delete(*args, **kwargs)
 
     def clean(self):
         if self.copy_sales < 0:
@@ -86,19 +74,8 @@ class Track(models.Model):
     bpm = models.IntegerField()
     released = models.IntegerField()
     album = models.ForeignKey(Album, on_delete=models.CASCADE, related_name='tracks', db_index=True) # Add index
-    collaborations_count = models.PositiveIntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
-
-    def save(self, *args, **kwargs):
-        is_new = self.pk is None
-        super().save(*args, **kwargs)
-        if is_new:
-            Album.objects.filter(id=self.album_id).update(tracks_count=F('tracks_count') + 1)
-
-    def delete(self, *args, **kwargs):
-        Album.objects.filter(id=self.album_id).update(tracks_count=F('tracks_count') - 1)
-        super().delete(*args, **kwargs)
 
     def clean(self):
         from datetime import datetime
@@ -117,7 +94,6 @@ class Artist(models.Model):
     sex = models.CharField(max_length=255)
     description = models.CharField(max_length=255)
     birth_day = models.DateField()
-    collaborations_count = models.PositiveIntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
 
@@ -134,18 +110,6 @@ class TrackArtistColab(models.Model):
     royalty_percentage = models.DecimalField(max_digits=5, decimal_places=2)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     
-
-    def save(self, *args, **kwargs):
-        is_new = self.pk is None
-        super().save(*args, **kwargs)
-        if is_new:
-            Track.objects.filter(id=self.track_id).update(collaborations_count=F('collaborations_count') + 1)
-            Artist.objects.filter(id=self.artist_id).update(collaborations_count=F('collaborations_count') + 1)
-            
-    def delete(self, *args, **kwargs):
-        Track.objects.filter(id=self.track_id).update(collaborations_count=F('collaborations_count') - 1)
-        Artist.objects.filter(id=self.artist_id).update(collaborations_count=F('collaborations_count') - 1)
-        super().delete(*args, **kwargs)
 
 
     def clean(self):

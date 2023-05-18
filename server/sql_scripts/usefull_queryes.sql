@@ -68,3 +68,9 @@ SELECT * FROM pg_stat_activity;
             #   python manage.py collectstatic --no-input --clear &&
             # #  gunicorn -b 0.0.0.0:8000 music_library.wsgi &&
             #   python manage.py runserver 0.0.0.0:8000"
+
+
+
+\copy (SELECT conname AS constraint_name, conrelid::regclass AS table_name, pg_get_constraintdef(pg_constraint.oid) AS constraint_definition FROM pg_constraint WHERE conrelid::regclass::text LIKE 'music%') TO '/sql_scripts/constraints.csv' CSV HEADER;
+\copy (SELECT tablename, indexname, indexdef FROM pg_indexes WHERE tablename LIKE 'music%') TO '/sql_scripts/indexes.csv' CSV HEADER;
+
