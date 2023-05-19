@@ -168,6 +168,7 @@ def generate_customuser_sql(num_users, batch_size=1000):
         
         num_admins = int(num_users * 0.001)
         num_moderators = int(num_users * 0.01)
+        password = make_password('Password.123') 
 
         for i in range(num_users):
             is_regular = is_moderator = is_admin = is_staff = is_superuser = False
@@ -175,22 +176,14 @@ def generate_customuser_sql(num_users, batch_size=1000):
 
             if i < num_admins:
                 is_admin = is_staff = is_superuser = True
-                is_moderator = False
-                is_regular = False
-
                 username = f"admin_{i+1}"
             elif i < num_admins + num_moderators:
-                is_admin = False
                 is_moderator = True
-                is_regular = False
                 username = f"moderator_{i+1 - num_admins}"
             else:
-                is_admin = False
-                is_moderator = False
-                is_regular = is_staff = True
+                is_regular = True
                 username = f"regular_{i+1 - num_admins - num_moderators}"
 
-            password = make_password('Password.123') 
             email = fake.email().replace("'", "''")
             date_joined = fake.date_this_year().isoformat()
             first_name = fake.first_name().replace("'", "''")

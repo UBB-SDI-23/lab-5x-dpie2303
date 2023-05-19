@@ -108,26 +108,37 @@ class UserLightSerializer(serializers.ModelSerializer):
 
 class ArtistListSerializer(serializers.ModelSerializer):
     user = UserLightSerializer(read_only=True)
+    collaborations_count = serializers.SerializerMethodField()
+
 
     class Meta:
         model = Artist
         fields = ['user','id', 'name', 'country_of_origin', 'sex', 'description', 'birth_day', 'collaborations_count']
 
+    def get_collaborations_count(self, obj):
+        return obj.collaborations.count()
+
 class TrackListSerializer(serializers.ModelSerializer):
     user = UserLightSerializer(read_only=True)
+    collaborations_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Track
         fields = ['user', 'id', 'name', 'genres', 'description', 'bpm', 'released', 'album', 'collaborations_count']
 
-
+    def get_collaborations_count(self, obj):
+        return obj.collaborations.count()
+    
 class AlbumListSerializer(serializers.ModelSerializer):
     user = UserLightSerializer(read_only=True)
+    tracks_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Album
         fields = ['user', 'id', 'name', 'description', 'top_rank', 'copy_sales', 'release_date', 'record_company', 'tracks_count']
-
+    
+    def get_tracks_count(self, obj):
+        return obj.tracks.count()
 
 class TrackLightSerializer(serializers.ModelSerializer):
     class Meta:
