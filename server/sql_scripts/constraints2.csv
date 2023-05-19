@@ -1,0 +1,19 @@
+constraint_name,table_name,constraint_definition
+music_album_pkey,music_album,PRIMARY KEY (id)
+music_artist_pkey,music_artist,PRIMARY KEY (id)
+music_recordcompany_pkey,music_recordcompany,PRIMARY KEY (id)
+music_track_pkey,music_track,PRIMARY KEY (id)
+music_trackartistcolab_pkey,music_trackartistcolab,PRIMARY KEY (id)
+music_userprofile_pkey,music_userprofile,PRIMARY KEY (id)
+music_confirmationcode_pkey,music_confirmationcode,PRIMARY KEY (id)
+music_userprofile_user_id_5531150c_fk_accounts_customuser_id,music_userprofile,FOREIGN KEY (user_id) REFERENCES accounts_customuser(id) DEFERRABLE INITIALLY DEFERRED
+music_confirmationco_user_id_d9b284ea_fk_accounts_customuser_id,music_confirmationcode,FOREIGN KEY (user_id) REFERENCES accounts_customuser(id) DEFERRABLE INITIALLY DEFERRED
+music_track_user_id_396b3280_fk_accounts_customuser_id,music_track,FOREIGN KEY (user_id) REFERENCES accounts_customuser(id) DEFERRABLE INITIALLY DEFERRED
+music_track_album_id_f2264d26_fk_music_album_id,music_track,FOREIGN KEY (album_id) REFERENCES music_album(id) DEFERRABLE INITIALLY DEFERRED
+music_trackartistcol_user_id_89084bf6_fk_accounts_,music_trackartistcolab,FOREIGN KEY (user_id) REFERENCES accounts_customuser(id) DEFERRABLE INITIALLY DEFERRED
+music_trackartistcolab_track_id_b773040b_fk_music_track_id,music_trackartistcolab,FOREIGN KEY (track_id) REFERENCES music_track(id) DEFERRABLE INITIALLY DEFERRED
+music_trackartistcolab_artist_id_f913e6b0_fk_music_artist_id,music_trackartistcolab,FOREIGN KEY (artist_id) REFERENCES music_artist(id) DEFERRABLE INITIALLY DEFERRED
+music_album_user_id_5762717f_fk_accounts_customuser_id,music_album,FOREIGN KEY (user_id) REFERENCES accounts_customuser(id) DEFERRABLE INITIALLY DEFERRED
+music_album_record_company_id_441dcab6_fk_music_rec,music_album,FOREIGN KEY (record_company_id) REFERENCES music_recordcompany(id) DEFERRABLE INITIALLY DEFERRED
+music_recordcompany_user_id_0d9ed0b0_fk_accounts_customuser_id,music_recordcompany,FOREIGN KEY (user_id) REFERENCES accounts_customuser(id) DEFERRABLE INITIALLY DEFERRED
+music_artist_user_id_b0d56609_fk_accounts_customuser_id,music_artist,FOREIGN KEY (user_id) REFERENCES accounts_customuser(id) DEFERRABLE INITIALLY DEFERRED

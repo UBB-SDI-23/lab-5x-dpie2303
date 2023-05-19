@@ -28,7 +28,6 @@ CREATE INDEX music_artist_user_id_b0d56609 ON music_artist USING btree (user_id)
 CREATE INDEX music_recordcompany_user_id_0d9ed0b0 ON music_recordcompany USING btree (user_id);
 CREATE INDEX music_track_user_id_396b3280 ON music_track USING btree (user_id);
 CREATE INDEX music_trackartistcolab_user_id_89084bf6 ON music_trackartistcolab USING btree (user_id);
-CREATE UNIQUE INDEX music_confirmationcode_user_id_key ON music_confirmationcode USING btree (user_id);
 CREATE UNIQUE INDEX music_userprofile_user_id_key ON music_userprofile USING btree (user_id);
 CREATE INDEX music_track_album_id_f2264d26 ON public.music_track USING btree (album_id);
 CREATE INDEX music_trackartistcolab_artist_id_f913e6b0 ON public.music_trackartistcolab USING btree (artist_id);

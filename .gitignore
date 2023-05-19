@@ -11,10 +11,10 @@ server/sql_scripts/*.sql
 !server/sql_scripts/drop_duplicates.sql
 !server/sql_scripts/usefull_queryes.sql
 !server/sql_scripts/create_count_colum.sql
+!server/sql_scripts/constraints.csv
+!server/sql_scripts/constraints2.csv
 !server/sql_scripts/indexes.csv
 !server/sql_scripts/indexes2.csv
-!server/sql_scripts/constraints2.csv
-!server/sql_scripts/constraints.csv
 
 # ignore log files
 *.log
