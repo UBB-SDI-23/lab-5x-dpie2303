@@ -11,6 +11,7 @@ ALTER TABLE music_album ADD CONSTRAINT music_album_user_id_5762717f_fk_accounts_
 ALTER TABLE music_album ADD CONSTRAINT music_album_record_company_id_441dcab6_fk_music_rec FOREIGN KEY (record_company_id) REFERENCES music_recordcompany(id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE music_recordcompany ADD CONSTRAINT music_recordcompany_user_id_0d9ed0b0_fk_accounts_customuser_id FOREIGN KEY (user_id) REFERENCES accounts_customuser(id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE music_artist ADD CONSTRAINT music_artist_user_id_b0d56609_fk_accounts_customuser_id FOREIGN KEY (user_id) REFERENCES accounts_customuser(id) DEFERRABLE INITIALLY DEFERRED;
+
 -- Continue with the creation of non-primary key indexes
 CREATE INDEX music_album_copy_sales_d02d7ca3 ON music_album USING btree (copy_sales);
 CREATE INDEX music_album_name_1f80804d ON music_album USING btree (name);
