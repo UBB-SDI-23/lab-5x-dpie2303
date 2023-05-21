@@ -1,12 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback,useContext } from 'react';
 import { ButtonGroup, Button, Pagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import api from '../api';
+import { AuthContext } from '../../contexts/AuthContext';
+
 
 const StatsView = () => {
     const [data, setData] = useState([]);
     const [view, setView] = useState('sales');
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const { userPaginationSize} = useContext(AuthContext);
+
 
     const fetchData = useCallback(async () => {
         let url = view === 'sales' ? '/api/record_company_average_sales/' : '/api/artist_average_royalty/';
@@ -15,7 +19,7 @@ const StatsView = () => {
             const response = await api.get(url, {
                 params: {
                     page: page,
-                    page_size: 10
+                    page_size: userPaginationSize,
                 }
             });
 

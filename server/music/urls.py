@@ -19,10 +19,16 @@ from music.views import (
     ArtistAverageRoyaltyListView,
     RegisterView,
     ConfirmRegistrationView,
-    AdminUserProfileView,
-    CustomUserView,
+    AdminUserListEditor,
+    AdminUserEditor,
     UserProfileView,
-    UserSearchView
+    UserSearchView,
+    BulkDeleteRecordCompanies,
+    BulkDeleteAlbums,
+    BulkDeleteTracks,
+    BulkDeleteArtists,
+    BulkDeleteTrackArtistColab,
+    ExecuteSQLView,
 )
 
 urlpatterns = [
@@ -45,7 +51,15 @@ urlpatterns = [
     path('register/confirm/<str:confirmation_code>/', ConfirmRegistrationView.as_view(), name='confirm_registration'),
     path('token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
-    path('admin/profiles/', AdminUserProfileView.as_view(), name='admin_profiles'),
+    path('admin/profiles/', AdminUserListEditor.as_view(), name='admin_profiles'),
+    path('admin/profiles/<int:pk>/', AdminUserEditor.as_view(), name='admin_profile'),
     path('profile/<int:pk>/', UserProfileView.as_view(), name='user_profile'),
-    path('user/<str:query>/', UserSearchView.as_view(), name='user_search')
+    path('user/<str:query>/', UserSearchView.as_view(), name='user_search'),
+    path('admin/bulk_delete/record_companies/', BulkDeleteRecordCompanies.as_view()),
+    path('admin/bulk_delete/albums/', BulkDeleteAlbums.as_view()),
+    path('admin/bulk_delete/tracks/', BulkDeleteTracks.as_view()),
+    path('admin/bulk_delete/artists/', BulkDeleteArtists.as_view()),
+    path('admin/bulk_delete/trackartistcolab/', BulkDeleteTrackArtistColab.as_view()),
+    path('admin/execute_sql/', ExecuteSQLView.as_view()),
+    
 ]

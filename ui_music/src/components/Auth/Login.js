@@ -8,38 +8,35 @@ import { Container, Typography, TextField, Button, Grid } from '@mui/material';
 
 const Login = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
-  const { setIsAuthenticated, setUser, setToken } = useContext(AuthContext);
+  const { setIsAuthenticated, setUser, setAccess, setRefresh } = useContext(AuthContext);
   const [ setServerErrors] = useState({});
   const navigate = useNavigate(); // Use useNavigate instead of Navigate
 
 
-  const onSubmit = data => {
-
-    console.log(data);
-    api.post('/api/token/', data)
-      .then(response => {
+  const onSubmit = async data => {
+    try {
+        const response = await api.post('/api/token/', data)
         const access = response.data.access;
         const refresh = response.data.refresh;
 
         localStorage.setItem('access', access);
         localStorage.setItem('refresh', refresh);
-        
-        // Now fetch the user data
-        api.get(`api/user/${data.username}/`, {
+
+        const userResponse = await api.get(`api/user/${data.username}/`, {
             headers: { Authorization: `Bearer ${access}` }
-        })
-        .then(response => {
-            localStorage.setItem('user', JSON.stringify(response.data));
-            setUser(response.data);
-            setIsAuthenticated(true);
-            setToken(access);
-            navigate('/'); 
         });
-      })
-      .catch(error => {
+
+        localStorage.setItem('user', JSON.stringify(userResponse.data));
+        setUser(userResponse.data);
+        setIsAuthenticated(true);
+        setAccess(access);
+        setRefresh(refresh);
+        navigate('/'); 
+
+    } catch (error) {
         setServerErrors(error.response.data);
-      });
-  };
+    }
+};
 
 
   return (

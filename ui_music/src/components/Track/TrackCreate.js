@@ -1,7 +1,7 @@
-import React, { useState ,useContext} from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
-import { Container, Typography, TextField, Button, Grid } from '@mui/material';
+import { Container, Typography, TextField, Button, Grid, List, ListItem, ListItemText, Pagination } from '@mui/material';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -16,42 +16,80 @@ const TrackCreate = () => {
     album: '',
     user: 0,
   });
+  
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
   const { user, isAuthenticated } = useContext(AuthContext);
+  const [albumSearch, setAlbumSearch] = useState('');
+  const [albumSearchResults, setAlbumSearchResults] = useState([]);
+  const [selectedAlbum, setSelectedAlbum] = useState(null);
+  const [page] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const { userPaginationSize} = useContext(AuthContext);
+  const { access } = useContext(AuthContext);
+
 
   const handleChange = (event) => {
     setTrack({ ...track, [event.target.name]: event.target.value });
   };
-  
+
+  const handleAlbumSearch = async (query, page) => {
+    setAlbumSearch(query);
+    if (query) {
+      try {
+        const response = await api.get(`/api/albums/?q=${query}&page=${page}&page_size=${userPaginationSize}`);
+        setAlbumSearchResults(response.data.results);
+        setTotalPages(response.data.total_pages);
+        console.log(response.data.results);
+      } catch (error) {
+        console.error('Error searching for albums:', error);
+      }
+    } else {
+      setAlbumSearchResults([]);
+    }
+  };
+
+  const handleAlbumSelection = (albumId, albumName) => {
+    setSelectedAlbum(albumId);
+    setAlbumSearch(albumName);
+    setAlbumSearchResults([]);  // This will clear the search results
+  };
+
   const handleSubmit = async (event) => {
     if(!isAuthenticated){
-      toast.error('Error creating track. you need to login.');
-      errors.user = "You must be logged in to create an track.";
+      toast.error('Error creating track. You need to login.');
+      errors.user = "You must be logged in to create a track.";
     }
+
     event.preventDefault();
     if (track.bpm  < 0) {
        errors.bpm =  'BPM must be a non-negative integer.';
     } 
+
     if (track.released > new Date().getFullYear()) {
       errors.released = 'The released year cannot be in the future.';
     }
+    
     if (Object.keys(errors).length > 0) {
       setErrors(errors);
       return;
     }
+
     track.user = user.id;
+    track.album = selectedAlbum;
     console.log(track);
+
     try {
-      // no need to parse to int again, track.bpm is already an integer
-      await api.post('/api/tracks/', track);
-      toast.success('Track created successfully!');
-      navigate('/tracks');
+      const response = await api.post('/api/tracks/', track, {
+        headers: { Authorization: `Bearer ${access}` }
+      });
+      navigate('/tracks/' + response.data.id + '/');
     } catch (error) {
       console.error('Error creating track:', error);
       toast.error('Error creating track.');
     }
   };
+
 
   return (
     <Container>
@@ -116,15 +154,27 @@ const TrackCreate = () => {
               helperText={errors.released}
             />
           </Grid>
-          <Grid item xs={12}>
+         <Grid item xs={12}>
             <TextField
-              required
               fullWidth
-              label="Album ID"
-              name="album"
-              value={track.album}
-              onChange={handleChange}
+              label="Search for an Album"
+              name="album_search"
+              value={albumSearch}
+              onChange={(event) => setAlbumSearch(event.target.value)}
             />
+              <Button onClick={() => handleAlbumSearch(albumSearch, 1)} variant="contained" color="primary">
+              Search
+            </Button>
+            <List>
+              {albumSearchResults.map((album) => (
+                <ListItem key={album.id} button onClick={() => handleAlbumSelection(album.id, album.name)}>
+                  <ListItemText primary={album.name} />
+                </ListItem>
+              ))}
+            </List>
+            {albumSearchResults.length > 0 && 
+              <Pagination count={totalPages} page={page} onChange={(event, value) => handleAlbumSearch(albumSearch, value)} />
+            }
           </Grid>
           <Grid item xs={12}>
             <Button type="submit" variant="contained" color="primary">

@@ -19,6 +19,9 @@ import AlbumDetails from './components/Album/AlbumDetails';
 import Register from './components/Auth/Register';
 import Login from './components/Auth/Login';
 import UserProfile from './components/User/UserProfile';
+import UserAdminList from './components/User/UserAdminList';
+import UserAdminDetails from './components/User/UserAdminDetails';
+import AdminBulkDelete from './components/Admin/AdminBulkDelete';
 import { AuthContext } from './contexts/AuthContext';
 import { AuthProvider } from './contexts/AuthProvider';
 
@@ -112,9 +115,34 @@ function AppContent() {
                       color="primary"
                       component={Link}
                       to="/statistics"
+                      sx={{ marginRight: 2 }}
+
                     >
                       Statistics
                     </Button>
+                    {isAuthenticated && user.is_admin && (
+                      <React.Fragment>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        component={Link}
+                        to="/admin/users"
+                        sx={{ marginRight: 2 }}
+                      >
+                        Manage Users
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        component={Link}
+                        to="/admin/editor"
+                        sx={{ marginRight: 2 }}
+                      >
+                        Edit data
+                      </Button>
+                    </React.Fragment>
+                    
+                    )}
                   </div>
                 }
               />
@@ -131,6 +159,10 @@ function AppContent() {
               <Route path="/register" element={<Register />} />
               <Route path="/login" element={<Login />} />
               <Route path="/userprofile/:userId" element={<UserProfile />} />
+              <Route path="/admin/users" element={<UserAdminList />} />
+              <Route path="/admin/profiles/:userId" element={<UserAdminDetails />} />
+              <Route path="/admin/users" element={<UserAdminList />} />
+              <Route path="/admin/editor" element={<AdminBulkDelete />} />
           </Routes>
         </Container>
       </div>

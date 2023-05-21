@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback,useContext } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
 import {
@@ -8,43 +8,47 @@ import {
   Button,
   Box,
   TextField,
-  Pagination,
+  Pagination
 } from '@mui/material';
-import AlbumCard from './AlbumCard';
 import { AuthContext } from '../../contexts/AuthContext';
+import UserAdminCard from './UserAdminCard';
 
 
-const AlbumList = () => {
-  const [albums, setAlbums] = useState([]);
+
+const UserAdminList = () => {
+  const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [minCopySales, setMinCopySales] = useState('');
-  const { userPaginationSize} = useContext(AuthContext);
- 
+  const [query, setQuery] = useState('');
+  const { userPaginationSize } = useContext(AuthContext);
+  const { access } = useContext(AuthContext);
 
-  const fetchAlbums = useCallback(async () => {
+  const fetchUsers = useCallback(async () => {
     try {
-      const response = await api.get('/api/albums/', {
-          params: { page: currentPage, page_size: userPaginationSize, min_copy_sales: minCopySales },
-        });
-      setAlbums(response.data.results);
+    console.log(access);
+    const response = await api.get('api/admin/profiles/', {
+        params: { page: currentPage, page_size: userPaginationSize, q: query },
+        headers: { Authorization: `Bearer ${access}` }
+    });
+      setUsers(response.data.results);
       setTotalPages(response.data.total_pages);
     } catch (error) {
-      console.error('Error fetching albums:', error);
+      console.error('Error fetching users:', error);
     }
-  }, [currentPage, minCopySales]); // fetchAlbums now has dependencies
+  }, [currentPage, query, userPaginationSize]);
 
   useEffect(() => {
-    fetchAlbums();
-  }, [fetchAlbums]); // fetchAlbums is included in dependencies array
+    fetchUsers();
+  }, [fetchUsers]);
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
   };
 
   const handleFilterChange = () => {
-    setCurrentPage(1); // This will trigger the useEffect hook to run again.
+    setCurrentPage(1);
   };
+
   return (
     <Container>
       <Box
@@ -56,32 +60,23 @@ const AlbumList = () => {
         }}
       >
         <Typography variant="h4" gutterBottom>
-          Albums
+          User Profiles
         </Typography>
         <div>
           <TextField
-            value={minCopySales}
-            onChange={(e) => setMinCopySales(e.target.value)}
-            label="Min Copy Sales"
-            type="number"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            label="Search Users"
           />
           <Button onClick={handleFilterChange} variant="contained" color="primary">
             Filter
           </Button>
-          <Button
-            component={Link}
-            to="/albums/create"
-            variant="contained"
-            color="primary"
-          >
-            Add Album
-          </Button>
         </div>
       </Box>
       <Grid container spacing={2}>
-        {albums.map((album) => (
-          <Grid item key={album.id} xs={12} sm={6} md={4}>
-            <AlbumCard album={album} />
+        {users.map((user) => (
+          <Grid item key={user.id} xs={12} sm={6} md={4}>
+            <UserAdminCard user={user} />
           </Grid>
         ))}
       </Grid>
@@ -104,4 +99,4 @@ const AlbumList = () => {
   );
 };
 
-export default AlbumList;
+export default UserAdminList;
