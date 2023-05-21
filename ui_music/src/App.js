@@ -4,6 +4,7 @@ import {
   Route,
   Link,
   Routes,
+  useNavigate,
 } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Container, Button } from '@mui/material';
 import ArtistList from './components/Artist/ArtistList';
@@ -27,9 +28,12 @@ import { AuthProvider } from './contexts/AuthProvider';
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <Router>
+      <AuthProvider>
+        <AppContent/>
+      </AuthProvider>
+    </Router>
+
   );
 }
 
@@ -41,7 +45,6 @@ function AppContent() {
   const { isAuthenticated, user, logout } = useContext(AuthContext);
 
   return (
-    <Router>
       <div>
         <AppBar position="static">
           <Toolbar>
@@ -166,7 +169,6 @@ function AppContent() {
           </Routes>
         </Container>
       </div>
-    </Router>
   );
 }
 export default App;

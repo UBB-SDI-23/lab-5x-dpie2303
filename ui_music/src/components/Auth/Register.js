@@ -11,7 +11,6 @@ const  Register = () => {
   const navigate = useNavigate(); // Use useNavigate instead of Navigate
 
   const onSubmit = data => {
-    console.log(data);
        api.post('/api/register/', data)
       .then(response => {
         alert('A confirmation Link: ' +  process.env.REACT_APP_API_BASE_URL + '/api/register/confirm/'  + response.data.confirmation_code);

@@ -8,7 +8,7 @@ import { AuthContext } from '../../contexts/AuthContext';
 
 const UserProfile = () => {
   const [userProfile, setUserProfile] = useState({
-    username: '',
+    user: {username: '',id: 0},
     bio: '',
     location: '',
     birth_date: '',
@@ -35,6 +35,8 @@ const UserProfile = () => {
 
   const { userPaginationSize, setPaginationSize} = useContext(AuthContext);
   const { access } = useContext(AuthContext);
+  const {user,isAuthenticated} = useContext(AuthContext);
+  const [isEditable, setIsEditable] = useState(false);
 
 
   useEffect(() => {
@@ -46,11 +48,12 @@ const UserProfile = () => {
           setValue(field, data[field]);
         }
         setUserProfile(data);
+        setIsEditable((isAuthenticated && (user.is_admin || user.is_moderator)) || (isAuthenticated && response.data.user.id === user.id));
       })
       .catch(error => {
         console.error('Error fetching user profile:', error);
       });
-  }, [userId, setValue]);
+  }, [userId, setValue, isAuthenticated, user]);
 
   const onSubmit = async () => {
     let errors = {};
@@ -67,8 +70,6 @@ const UserProfile = () => {
       toast.error('Invalid inputs. Please correct the errors and try again.');
       return;
     }
-    console.log(access);
-    console.log(userProfile);
     try {
       await api.put(`/api/profile/${userId}/`, userProfile, {
         headers: { Authorization: `Bearer ${access}` }
@@ -96,7 +97,7 @@ const UserProfile = () => {
   return (
     <Container>
       <Typography variant="h4" gutterBottom>
-        User: {userProfile.username}
+        User: {userProfile.user.username}
       </Typography>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Grid container spacing={2}>
@@ -109,6 +110,9 @@ const UserProfile = () => {
               onChange={handleChange}
               helperText={errors.bio}
               error={errors.bio ? true : false}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -118,6 +122,9 @@ const UserProfile = () => {
               name="location"
               value={userProfile.location}
               onChange={handleChange}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -133,6 +140,9 @@ const UserProfile = () => {
               }}
               helperText={errors.birth_date}
               error={errors.birth_date ? true : false}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -142,6 +152,9 @@ const UserProfile = () => {
               name="gender"
               value={userProfile.gender}
               onChange={handleChange}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -154,6 +167,9 @@ const UserProfile = () => {
               onChange={handleChange}
               helperText={errors.marital_status}
               error={errors.marital_status ? true : false}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             >
               {maritalStatusOptions.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
@@ -228,7 +244,7 @@ const UserProfile = () => {
                 />
               </Grid>
               <Grid item xs={12}>
-              <Button type="submit" variant="contained" color="primary">
+              <Button type="submit" disabled={!isAuthenticated} variant="contained" color="primary">
               Update Profile
               </Button>
               </Grid>

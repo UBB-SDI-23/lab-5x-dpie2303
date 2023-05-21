@@ -20,6 +20,7 @@ const ArtistCreate = () => {
   const [errors, setErrors] = useState({});
   const { user,isAuthenticated} = useContext(AuthContext);
   const { access } = useContext(AuthContext);
+  const isEditable = isAuthenticated 
 
 
 
@@ -47,7 +48,6 @@ const ArtistCreate = () => {
     artist.user = user.id;
     event.preventDefault();
     try {
-      console.log(artist);
       const response = await api.post('/api/artists/', artist, {
         headers: { Authorization: `Bearer ${access}` }
       });
@@ -74,6 +74,9 @@ const ArtistCreate = () => {
               name="name"
               value={artist.name}
               onChange={handleChange}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -84,6 +87,9 @@ const ArtistCreate = () => {
               name="country_of_origin"
               value={artist.country_of_origin}
               onChange={handleChange}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -94,6 +100,9 @@ const ArtistCreate = () => {
               name="sex"
               value={artist.sex}
               onChange={handleChange}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -103,6 +112,9 @@ const ArtistCreate = () => {
               name="description"
               value={artist.description}
               onChange={handleChange}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -119,10 +131,13 @@ const ArtistCreate = () => {
               }}
               error={errors.birth_day ? true : false}
               helperText={errors.birth_day}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
-            <Button type="submit" variant="contained" color="primary">
+            <Button type="submit" disabled={!isEditable} variant="contained" color="primary">
               Create
             </Button>
           </Grid>

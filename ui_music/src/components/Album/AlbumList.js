@@ -32,7 +32,7 @@ const AlbumList = () => {
     } catch (error) {
       console.error('Error fetching albums:', error);
     }
-  }, [currentPage, minCopySales]); // fetchAlbums now has dependencies
+  }, [currentPage, minCopySales, userPaginationSize]); // fetchAlbums now has dependencies
 
   useEffect(() => {
     fetchAlbums();
@@ -42,42 +42,38 @@ const AlbumList = () => {
     setCurrentPage(value);
   };
 
-  const handleFilterChange = () => {
-    setCurrentPage(1); // This will trigger the useEffect hook to run again.
-  };
   return (
     <Container>
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          mb: 3,
-        }}
-      >
-        <Typography variant="h4" gutterBottom>
-          Albums
-        </Typography>
-        <div>
-          <TextField
-            value={minCopySales}
-            onChange={(e) => setMinCopySales(e.target.value)}
-            label="Min Copy Sales"
-            type="number"
-          />
-          <Button onClick={handleFilterChange} variant="contained" color="primary">
-            Filter
-          </Button>
-          <Button
-            component={Link}
-            to="/albums/create"
-            variant="contained"
-            color="primary"
-          >
-            Add Album
-          </Button>
-        </div>
-      </Box>
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h4" gutterBottom>
+            Albums
+          </Typography>
+        </Box>
+        <Box sx={{ width: '100%', mb: 3 }}>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={6} md={4} lg={3}>
+              <TextField
+                fullWidth
+                value={minCopySales}
+                onChange={(e) => setMinCopySales(e.target.value)}
+                label="Min Copy Sales"
+                type="number"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4} lg={3}>
+              <Button
+                fullWidth
+                component={Link}
+                to="/albums/create"
+                variant="contained"
+                color="primary"
+              >
+                Add Album
+              </Button>
+            </Grid>
+          </Grid>
+        </Box>
+
       <Grid container spacing={2}>
         {albums.map((album) => (
           <Grid item key={album.id} xs={12} sm={6} md={4}>

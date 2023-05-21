@@ -20,6 +20,7 @@ const ArtistDetails = () => {
     const { user, isAuthenticated } = useContext(AuthContext);
     const { userPaginationSize} = useContext(AuthContext);
     const { access } = useContext(AuthContext);
+    const [isEditable, setIsEditable] = useState(false);
 
 
   
@@ -27,10 +28,12 @@ const ArtistDetails = () => {
       try {
         const response = await api.get(`/api/artists/${id}/`);
         setArtist(response.data);
+        setIsEditable((isAuthenticated && (user.is_admin || user.is_moderator)) || (isAuthenticated && response.data.user.id === user.id));
+
       } catch (error) {
         console.error('Error fetching artist:', error);
       }
-    }, [id]);
+    }, [id,isAuthenticated,user]);
   
     useEffect(() => {
       fetchArtist();
@@ -121,7 +124,6 @@ const ArtistDetails = () => {
         user : user.id
       };
 
-      console.log(collaboration);
        try {
         await api.post(`/api/artists/${id}/tracks/`, collaboration, {
           headers: { Authorization: `Bearer ${access}` }
@@ -157,7 +159,10 @@ const ArtistDetails = () => {
               name="name"
               value={artist.name}
               onChange={(event) => setArtist({ ...artist, name: event.target.value })}
-            />
+              InputProps={{
+                readOnly: !isEditable,
+              }}
+           />
           </Grid>
           <Grid item xs={12}>
             <TextField
@@ -167,6 +172,9 @@ const ArtistDetails = () => {
               name="country_of_origin"
               value={artist.country_of_origin}
               onChange={(event) => setArtist({ ...artist, country_of_origin: event.target.value })}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -177,6 +185,9 @@ const ArtistDetails = () => {
               name="sex"
               value={artist.sex}
               onChange={(event) => setArtist({ ...artist, sex: event.target.value })}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -186,6 +197,9 @@ const ArtistDetails = () => {
               name="description"
               value={artist.description}
               onChange={(event) => setArtist({ ...artist, description: event.target.value })}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -202,13 +216,16 @@ const ArtistDetails = () => {
               }}
               error={errors.birth_day ? true : false}
               helperText={errors.birth_day}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
             <Grid item xs={12}>
-              <Button onClick={handleUpdate} variant="contained" color="primary">
+              <Button onClick={handleUpdate} disabled={!isEditable} variant="contained" color="primary">
                 Update Artist
               </Button>
-              <Button onClick={handleDelete} variant="contained" color="secondary">
+              <Button onClick={handleDelete} disabled={!isEditable} variant="contained" color="secondary">
                 Delete Artist
               </Button>
             </Grid>
@@ -219,8 +236,11 @@ const ArtistDetails = () => {
                 name="track_search"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
+                InputProps={{
+                  readOnly: !isAuthenticated,
+                }} 
               />
-              <Button onClick={() => handleSearch(searchQuery, 1)} variant="contained" color="primary">
+              <Button onClick={() => handleSearch(searchQuery, 1)} variant="contained" disabled={!isAuthenticated} color="primary">
               Search
               </Button>
             </Grid>
@@ -246,6 +266,9 @@ const ArtistDetails = () => {
                     name="collaboration_type"
                     value={collaborationType}
                     onChange={(event) => setCollaborationType(event.target.value)}
+                    InputProps={{
+                      readOnly: !isAuthenticated,
+                    }}
                   />
                 </Grid>
                 <Grid item xs={6}>
@@ -259,10 +282,13 @@ const ArtistDetails = () => {
                     onChange={(event) => setRoyaltyPercentage(event.target.value)}
                     error={errors.royalty_percentage ? true : false}
                     helperText={errors.royalty_percentage}
+                    InputProps={{
+                      readOnly: !isAuthenticated,
+                    }}   
                   />
               </Grid>
                 <Grid item xs={12}>
-                  <Button onClick={handleAddTrack} variant="contained" color="primary">
+                  <Button onClick={handleAddTrack} disabled={!isAuthenticated} variant="contained" color="primary">
                     Add Collaboration
                   </Button>
                 </Grid>

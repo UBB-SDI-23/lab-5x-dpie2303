@@ -28,7 +28,6 @@ const TrackCreate = () => {
   const { userPaginationSize} = useContext(AuthContext);
   const { access } = useContext(AuthContext);
 
-
   const handleChange = (event) => {
     setTrack({ ...track, [event.target.name]: event.target.value });
   };
@@ -40,7 +39,6 @@ const TrackCreate = () => {
         const response = await api.get(`/api/albums/?q=${query}&page=${page}&page_size=${userPaginationSize}`);
         setAlbumSearchResults(response.data.results);
         setTotalPages(response.data.total_pages);
-        console.log(response.data.results);
       } catch (error) {
         console.error('Error searching for albums:', error);
       }
@@ -77,7 +75,6 @@ const TrackCreate = () => {
 
     track.user = user.id;
     track.album = selectedAlbum;
-    console.log(track);
 
     try {
       const response = await api.post('/api/tracks/', track, {
@@ -106,6 +103,9 @@ const TrackCreate = () => {
               name="name"
               value={track.name}
               onChange={handleChange}
+              InputProps={{
+                readOnly: !isAuthenticated,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -116,6 +116,9 @@ const TrackCreate = () => {
               name="genres"
               value={track.genres}
               onChange={handleChange}
+              InputProps={{
+                readOnly: !isAuthenticated,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -128,6 +131,9 @@ const TrackCreate = () => {
               onChange={handleChange}
               error={errors.bpm ? true : false}
               helperText={errors.bpm}
+              InputProps={{
+                readOnly: !isAuthenticated,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -137,6 +143,9 @@ const TrackCreate = () => {
               name="description"
               value={track.description}
               onChange={handleChange}
+              InputProps={{
+                readOnly: !isAuthenticated,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -152,6 +161,9 @@ const TrackCreate = () => {
               }}
               error={errors.released ? true : false}
               helperText={errors.released}
+              InputProps={{
+                readOnly: !isAuthenticated,
+              }}
             />
           </Grid>
          <Grid item xs={12}>
@@ -161,8 +173,11 @@ const TrackCreate = () => {
               name="album_search"
               value={albumSearch}
               onChange={(event) => setAlbumSearch(event.target.value)}
+              InputProps={{
+                readOnly: !isAuthenticated,
+              }}
             />
-              <Button onClick={() => handleAlbumSearch(albumSearch, 1)} variant="contained" color="primary">
+              <Button onClick={() => handleAlbumSearch(albumSearch, 1)}  disabled={!isAuthenticated} variant="contained" color="primary">
               Search
             </Button>
             <List>
@@ -177,7 +192,7 @@ const TrackCreate = () => {
             }
           </Grid>
           <Grid item xs={12}>
-            <Button type="submit" variant="contained" color="primary">
+            <Button type="submit" disabled={!isAuthenticated} variant="contained" color="primary">
               Create
             </Button>
           </Grid>

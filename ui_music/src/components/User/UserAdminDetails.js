@@ -8,9 +8,8 @@ import { AuthContext } from '../../contexts/AuthContext';
 const UserAdminDetails = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [errors, setErrors] = useState({});
-  const { access } = useContext(AuthContext);
+  const [userProfile, setUser] = useState(null);
+  const { access, user, isAuthenticated } = useContext(AuthContext);
 
   const fetchUser = useCallback(async () => {
     try {
@@ -21,16 +20,18 @@ const UserAdminDetails = () => {
     } catch (error) {
       console.error('Error fetching user:', error);
     }
-  }, [userId]);
+  }, [userId,access]);
 
   useEffect(() => {
+    if(!isAuthenticated || !user.is_admin) {
+      navigate('/');
+    };
     fetchUser();
-  }, [fetchUser]);
+  }, [fetchUser,isAuthenticated, user, navigate]);
 
   const handleUpdate = async () => {
     try {
-      console.log(user);
-      await api.put(`/api/admin/profiles/${userId}/`, user, {
+      await api.put(`/api/admin/profiles/${userId}/`, userProfile, {
         headers: { Authorization: `Bearer ${access}` }
       });
       toast.success('User updated successfully.');
@@ -52,7 +53,7 @@ const UserAdminDetails = () => {
     }
   };
 
-  if (!user) {
+  if (!userProfile) {
     return null;
   }
 
@@ -69,8 +70,8 @@ const UserAdminDetails = () => {
               fullWidth
               label="Username"
               name="username"
-              value={user.username}
-              onChange={(event) => setUser({ ...user, username: event.target.value })}
+              value={userProfile.username}
+              onChange={(event) => setUser({ ...userProfile, username: event.target.value })}
             />
           </Grid>
           <Grid item xs={12}>
@@ -79,25 +80,25 @@ const UserAdminDetails = () => {
               fullWidth
               label="Email"
               name="email"
-              value={user.email}
-              onChange={(event) => setUser({ ...user, email: event.target.value })}
+              value={userProfile.email}
+              onChange={(event) => setUser({ ...userProfile, email: event.target.value })}
             />
           </Grid>
           <Grid item xs={12}>
             <FormControlLabel
-              control={<Switch checked={user.is_regular} onChange={(event) => setUser({ ...user, is_regular: event.target.checked })} />}
+              control={<Switch checked={userProfile.is_regular} onChange={(event) => setUser({ ...userProfile, is_regular: event.target.checked })} />}
               label="Regular User"
             />
           </Grid>
           <Grid item xs={12}>
             <FormControlLabel
-              control={<Switch checked={user.is_moderator} onChange={(event) => setUser({ ...user, is_moderator: event.target.checked })} />}
+              control={<Switch checked={userProfile.is_moderator} onChange={(event) => setUser({ ...userProfile, is_moderator: event.target.checked })} />}
               label="Moderator User"
             />
           </Grid>
           <Grid item xs={12}>
             <FormControlLabel
-              control={<Switch checked={user.is_admin} onChange={(event) => setUser({ ...user, is_admin: event.target.checked })} />}
+              control={<Switch checked={userProfile.is_admin} onChange={(event) => setUser({ ...userProfile, is_admin: event.target.checked })} />}
               label="Admin User"
             />
           </Grid>
