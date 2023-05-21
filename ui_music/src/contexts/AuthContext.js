@@ -5,7 +5,11 @@ export const AuthContext = createContext({
   setIsAuthenticated: () => {},
   user: null,
   setUser: () => {},
-  token: null,
-  setToken: () => {},
+  access: null,
+  setAccess: () => {},
+  refresh: null,
+  setRefresh: () => {},
   logout: () => {},
+  userPaginationSize: 10, 
+  setPaginationSize: () => {},
 });

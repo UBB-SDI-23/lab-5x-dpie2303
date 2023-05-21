@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback ,useContext} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { Container, Typography, TextField, Button, Grid } from '@mui/material';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const TrackDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [track, setTrack] = useState(null);
   const [errors, setErrors] = useState({});
+  const { access } = useContext(AuthContext);
 
 
   const fetchTrack = useCallback(async () => {
@@ -38,8 +40,10 @@ const TrackDetail = () => {
    }
 
     try {
-      await api.put(`/api/tracks/${id}/`, track);
-      navigate('/tracks');
+      await api.put(`/api/tracks/${id}/`, track, {
+        headers: { Authorization: `Bearer ${access}` }
+      });
+      navigate(`/tracks/${id}`);
     } catch (error) {
       console.error('Error updating track:', error);
     }
@@ -47,7 +51,9 @@ const TrackDetail = () => {
 
   const handleDelete = async () => {
     try {
-      await api.delete(`/api/tracks/${id}/`);
+      await api.delete(`/api/tracks/${id}/`, {
+        headers: { Authorization: `Bearer ${access}` }
+      });
       navigate('/tracks');
     } catch (error) {
       console.error('Error deleting track:', error);

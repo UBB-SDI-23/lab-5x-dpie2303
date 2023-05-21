@@ -2,7 +2,7 @@ import React, { useState ,useContext} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import api from '../api';
-import { Container, Typography, TextField, Button, Grid } from '@mui/material';
+import { List, ListItem, ListItemText, Pagination ,Container, Typography, TextField, Button, Grid } from '@mui/material';
 import { AuthContext } from '../../contexts/AuthContext';
 
 
@@ -20,7 +20,37 @@ const AlbumCreate = () => {
   });
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
+  const [recordCompanySearch, setRecordCompanySearch] = useState('');
+  const [recordCompanySearchResults, setRecordCompanySearchResults] = useState([]);
+  const [selectedRecordCompany, setSelectedRecordCompany] = useState(null);
+  const [page] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const { userPaginationSize} = useContext(AuthContext);
+  const { access } = useContext(AuthContext);
 
+
+  
+  const handleRecordCompanySearch = async (query, page) => {
+    setRecordCompanySearch(query);
+    if (query) {
+      try {
+        const response = await api.get(`/api/record_companies/?q=${query}&page=${page}&page_size=${userPaginationSize}`);
+        setRecordCompanySearchResults(response.data.results);
+        setTotalPages(response.data.total_pages);
+      } catch (error) {
+        console.error('Error searching for record companies:', error);
+      }
+    } else {
+      setRecordCompanySearchResults([]);
+    }
+  };
+
+  const handleRecordCompanySelection = (companyId, companyName) => {
+    setSelectedRecordCompany(companyId);
+    setRecordCompanySearch(companyName);
+    setRecordCompanySearchResults([]);  // This will clear the search results
+
+  };
 
 
   const handleSubmit = async (event) => {
@@ -41,9 +71,12 @@ const AlbumCreate = () => {
       return;
     }
     album.user = user.id;
+    album.record_company = selectedRecordCompany;
     try {
-      await api.post('/api/albums/', album);
-      navigate('/albums');
+      const response = await api.post('/api/albums/', album, {
+        headers: { Authorization: `Bearer ${access}` }
+      });
+      navigate('/albums/' + response.data.id + '/');
     } catch (error) {
       toast.error('Error creating album.');
       console.error('Error creating album:', error);
@@ -118,13 +151,25 @@ const AlbumCreate = () => {
           </Grid>
           <Grid item xs={12}>
             <TextField
-              required
               fullWidth
-              label="Record Company ID"
-              name="record_company"
-              value={album.record_company}
-              onChange={handleChange}
+              label="Search for a Record Company"
+              name="record_company_search"
+              value={recordCompanySearch}
+              onChange={(event) => setRecordCompanySearch(event.target.value)}
             />
+            <Button onClick={() => handleRecordCompanySearch(recordCompanySearch, 1)} variant="contained" color="primary">
+              Search
+            </Button>
+            <List>
+              {recordCompanySearchResults.map((company) => (
+                <ListItem key={company.id} button onClick={() => handleRecordCompanySelection(company.id, company.name)}>
+                  <ListItemText primary={company.name} />
+                </ListItem>
+              ))}
+            </List>
+            {recordCompanySearchResults.length > 0 && 
+              <Pagination count={totalPages} page={page} onChange={(event, value) => handleRecordCompanySearch(recordCompanySearch, value)} />
+            }
           </Grid>
           <Grid item xs={12}>
             <Button type="submit" variant="contained" color="primary">

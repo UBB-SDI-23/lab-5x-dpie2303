@@ -2,7 +2,7 @@ from django.db.models import Avg, Q
   
 from django.utils.crypto import get_random_string
 
-from rest_framework import generics, views, status, permissions
+from rest_framework import generics, views, status
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -16,13 +16,13 @@ from music.serializers import (RecordCompanySerializer, TrackArtistColabCreateSe
                           TrackArtistColabCreateSerializer,CustomUserSerializer,AdminUserProfileSerializer)
 
 from math import ceil
-from rest_framework_simplejwt.tokens import UntypedToken
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 import logging
 from django.db import connection
 from datetime import timedelta
 from django.utils import timezone
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
+from music.permissions import IsAdminUser, IsAuthenticatedWithJWT, IsOwnerOrReadOnly
 
 CustomUser = get_user_model()
 
@@ -34,88 +34,64 @@ def custom_paginate(queryset, page, page_size):
     start = (page - 1) * page_size
     end = start + page_size
 
-    # Approximate count
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT reltuples FROM pg_class WHERE relname = %s", [queryset.model._meta.db_table])
-        row = cursor.fetchone()
-        if row:
-            total_items = int(row[0])
-        else:
-            total_items = queryset.count()  # Fallback to actual count if no result from above
-
+    
+    total_items = queryset.count()  # Get the exact count
     total_pages = ceil(total_items / page_size)
     sliced_queryset = queryset[start:end]
+    # Use raw SQL for pagination
+    # raw_query = f"SELECT * FROM {queryset.model._meta.db_table} ORDER BY id LIMIT {page_size} OFFSET {start}"
+    # sliced_queryset = queryset.raw(raw_query)
 
     return sliced_queryset, total_pages
 
 
 
-class IsAdminUser(permissions.BasePermission):
+class PermissionEnforcementMixin:
     """
-    Allows access only to admin users.
+    A mixin that adds permission enforcement for unsafe methods.
     """
+    def check_permissions(self, request):
+        """
+        Overriding the original method to add custom behaviour.
+        """
+        # Call the original check_permissions method
 
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.is_admin)
+        super().check_permissions(request)
 
-class IsOwnerOrReadOnly(permissions.BasePermission):
-    """
-    Object-level permission to only allow owners of an object to edit it.
-    """
+        # Add additional check for object permissions
+        if request.method in ['PUT', 'PATCH', 'DELETE']:
+            logging.info(f"CHECKING {self.get_object()}")
+            self.check_object_permissions(request, self.get_object())
 
-    def has_object_permission(self, request, view, obj):
-        # Read permissions are allowed to any request,
-        # so we'll always allow GET, HEAD or OPTIONS requests.
-        if request.method in permissions.SAFE_METHODS:
-            return True
+        return True
 
-        # Write permissions are only allowed to the owner of the object.
-        return obj == request.user
-    
-class IsAuthenticatedWithJWT(permissions.BasePermission):
-    def has_permission(self, request, view):
-        # Allow access if the HTTP method is 'GET'
-        if request.method == 'GET':
-            return True
-
-        # Perform JWT authentication for other methods
-        auth_header = request.META.get('HTTP_AUTHORIZATION', '').split()
-
-        if len(auth_header) == 2 and auth_header[0].lower() == 'bearer':
-            token = auth_header[1]
-            try:
-                # Validate the token
-                valid_token = UntypedToken(token)
-                # Try to find a user with the id contained in the token
-                User = get_user_model()
-                user = User.objects.filter(id=valid_token['user_id']).first()
-                # If the user exists, the token is valid, hence return True
-                if user:
-                    return True
-            except (InvalidToken, TokenError):
-                pass
-
-        # If we are here, the user is not authenticated with a valid JWT
-        return False
-
-class UserProfileView(views.APIView):
-    permission_classes = [IsOwnerOrReadOnly, IsAuthenticatedWithJWT]
-
+class UserProfileView(PermissionEnforcementMixin,generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticatedWithJWT,IsOwnerOrReadOnly]
+    queryset = CustomUser.objects.all()
     def get(self, request, pk=None):
+
         user = CustomUser.objects.get(pk=pk)
         user_profile = UserProfile.objects.get(user=user)
         serializer = UserProfileSerializer(user_profile)
+
         return Response(serializer.data)
 
+
     def put(self, request, pk):
+        logging.info(f"Is user authenticated? {request.user.is_authenticated}")
+        logging.info(f"request.user: {request.user}")
         user = CustomUser.objects.get(pk=pk)
         user_profile = UserProfile.objects.get(user=user)
+        # self.has_object_permission(request, user, user_profile)
+        # self.check_object_permissions(request, user_profile)
+
+        logging.info(f"user_profile: {user_profile}")        
+
         serializer = UserProfileSerializer(user_profile, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class UserSearchView(views.APIView):
@@ -135,7 +111,7 @@ class UserSearchView(views.APIView):
         except CustomUser.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
-class CustomUserView(views.APIView):
+class CustomUserView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsOwnerOrReadOnly]
 
     def get(self, request):
@@ -157,27 +133,44 @@ class CustomUserView(views.APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class AdminUserProfileView(views.APIView):
-    permission_classes = [IsAdminUser]
+class AdminUserListEditor(views.APIView):
+    permission_classes = [IsAuthenticatedWithJWT,IsAdminUser]
 
-    def get(self, request):
-        page = int(request.query_params.get('page', 1))
-        page_size = int(request.query_params.get('page_size', 10))
-        queryset = UserProfile.objects.all()
-        paginated_queryset, total_pages = self.custom_paginate(queryset, page, page_size)
-        serializer = AdminUserProfileSerializer(paginated_queryset, many=True)
+    def get_queryset(self):
+        query = self.request.query_params.get('q', '')
+
+        if query == '' or query is None:
+            return CustomUser.objects.all()
+        logger.info(f"DEBUGGER {query}")    
+        queryset = CustomUser.objects.filter(Q(username__icontains=query))
+        return queryset
+
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        page = request.query_params.get('page', 1)
+        page_size = request.query_params.get('page_size', 10)
+        queryset, total_pages = custom_paginate(queryset, int(page), int(page_size))
+
+        serializer = CustomUserSerializer(queryset, many=True)
         return Response({
             'total_pages': total_pages,
             'results': serializer.data
         })
 
-   
+class AdminUserEditor(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticatedWithJWT,IsAdminUser]
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+ 
 
 class RegisterView(views.APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
+            logging.info(f"serializer.data: {serializer.validated_data}")
             user = serializer.save()
+            logging.info(f"user: {user}")
             # Create a confirmation code
             code = get_random_string(length=32)
             ConfirmationCode.objects.create(user=user, code=code, expiry_date=timezone.now()+timedelta(minutes=10))
@@ -196,6 +189,9 @@ class ConfirmRegistrationView(views.APIView):
                 user = confirmation.user
                 user.is_active = True
                 user.save()
+                logging.info(f"user: {user}")
+                UserProfile.objects.create(user=user)
+
                 confirmation.delete()
                 return Response({"message": "Account confirmed successfully."}, status=status.HTTP_200_OK)
         except ConfirmationCode.DoesNotExist:
@@ -231,6 +227,7 @@ class TrackSearchAPIView(generics.ListAPIView):
 
 
 class TrackList(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticatedWithJWT,IsOwnerOrReadOnly]
 
 
     def get_serializer_class(self):
@@ -252,12 +249,13 @@ class TrackList(generics.ListCreateAPIView):
 
         serializer = self.get_serializer(current_page, many=True)
         return Response({
-            'tracks': serializer.data,
+            'results': serializer.data,
             'total_pages': total_pages
         })
 
 
-class AlbumList(generics.ListCreateAPIView):
+class AlbumList(PermissionEnforcementMixin,generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticatedWithJWT,IsOwnerOrReadOnly]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -266,10 +264,17 @@ class AlbumList(generics.ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Album.objects.all()
+
+        # Filtering on copy sales
         min_copy_sales = self.request.query_params.get('min_copy_sales')
-        logger.info(f"DEBUGGER {min_copy_sales}")
         if min_copy_sales is not None and min_copy_sales != '':
             queryset = queryset.filter(copy_sales__gte=min_copy_sales)
+
+        # Filtering on name
+        query = self.request.query_params.get('q', None)
+        if query is not None and query != '':
+            queryset = queryset.filter(Q(name__icontains=query))
+
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -283,34 +288,65 @@ class AlbumList(generics.ListCreateAPIView):
 
         serializer = self.get_serializer(current_page, many=True)
         return Response({
-            'albums': serializer.data,
+            'results': serializer.data,
             'total_pages': total_pages
         })
 
-class RecordCompanyList(generics.ListCreateAPIView):
+class RecordCompanyList(PermissionEnforcementMixin,generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticatedWithJWT,IsOwnerOrReadOnly]
+
+    serializer_class = RecordCompanySerializer
+
+    def get_queryset(self):
+        query = self.request.query_params.get('q', '')
+        if query == '':
+            return RecordCompany.objects.all()
+        logger.info(f"DEBUGGER {query}")    
+        queryset = RecordCompany.objects.filter(Q(name__icontains=query))
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = request.query_params.get('page', 1)
+        page_size = request.query_params.get('page_size', 10)
+        queryset, total_pages = custom_paginate(queryset, int(page), int(page_size))
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            'total_pages': total_pages,
+            'results': serializer.data
+        })
+
+
+
+
+class RecordCompanyDetail(PermissionEnforcementMixin,generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticatedWithJWT,IsOwnerOrReadOnly]
+
     queryset = RecordCompany.objects.all()
     serializer_class = RecordCompanySerializer
 
 
-class RecordCompanyDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = RecordCompany.objects.all()
-    serializer_class = RecordCompanySerializer
-
-
-class AlbumDetail(generics.RetrieveUpdateDestroyAPIView):
+class AlbumDetail(PermissionEnforcementMixin,generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticatedWithJWT,IsOwnerOrReadOnly]
+   
     queryset = Album.objects.all()
     serializer_class = AlbumDetailSerializer
 
 
 
 
-class TrackDetail(generics.RetrieveUpdateDestroyAPIView):
+class TrackDetail(PermissionEnforcementMixin,generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticatedWithJWT,IsOwnerOrReadOnly]
+
     queryset = Track.objects.all()
     serializer_class = TrackDetailSerializer
 
 
-class ArtistList(generics.ListCreateAPIView):
-  
+class ArtistList(PermissionEnforcementMixin,generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticatedWithJWT,IsOwnerOrReadOnly]
+
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return ArtistListSerializer
@@ -331,28 +367,58 @@ class ArtistList(generics.ListCreateAPIView):
 
         serializer = self.get_serializer(current_page, many=True)
         return Response({
-            'artists': serializer.data,
+            'results': serializer.data,
             'total_pages': total_pages
         })  
 
 
     
-class ArtistDetail(generics.RetrieveUpdateDestroyAPIView):
+class ArtistDetail(PermissionEnforcementMixin,generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticatedWithJWT,IsOwnerOrReadOnly]
+
+    
     queryset = Artist.objects.all()
     serializer_class = ArtistDetailSerializer
 
 
-class TrackArtistColabList(generics.ListCreateAPIView):
-    queryset = TrackArtistColab.objects.all()
-    serializer_class = TrackArtistColabSerializer
+class TrackArtistColabList(PermissionEnforcementMixin,generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticatedWithJWT,IsOwnerOrReadOnly]
 
-
-class TrackArtistColabDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = TrackArtistColab.objects.all()
     serializer_class = TrackArtistColabDetailSerializer
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TrackArtistColabDetailSerializer
+        return TrackArtistColabDetailSerializer
 
+    def get_queryset(self):
+        queryset = TrackArtistColab.objects.all()
+
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 10))
+        
+        # Use the custom pagination function
+        current_page, total_pages = custom_paginate(queryset, page, page_size)
+
+        serializer = self.get_serializer(current_page, many=True)
+        return Response({
+            'results': serializer.data,
+            'total_pages': total_pages
+        })  
+
+
+class TrackArtistColabDetail(PermissionEnforcementMixin,generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticatedWithJWT,IsOwnerOrReadOnly]
+
+    serializer_class = TrackArtistColabDetailSerializer
+    queryset = TrackArtistColab.objects.all()
 
 class AddTrackToArtist(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticatedWithJWT]
+
     serializer_class = TrackArtistColabSerializer
 
     def get_queryset(self):
@@ -424,3 +490,76 @@ class RecordCompanyAverageSalesView(views.APIView):
         serializer = RecordCompanyAverageSalesSerializer(paginated_queryset, many=True)
 
         return Response({"total_pages": total_pages, "results": serializer.data})
+
+
+
+
+class BulkDeleteRecordCompanies(views.APIView):
+    permission_classes = [IsAuthenticatedWithJWT, IsAdminUser]
+
+    def post(self, request, *args, **kwargs):
+        ids_to_delete = request.data.get('ids', [])
+        try:
+            RecordCompany.objects.filter(id__in=ids_to_delete).delete()
+            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+        except ObjectDoesNotExist:
+            return Response({"message": "Record Company not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class BulkDeleteAlbums(views.APIView):
+    permission_classes = [IsAuthenticatedWithJWT, IsAdminUser]
+
+    def post(self, request, *args, **kwargs):
+        ids_to_delete = request.data.get('ids', [])
+        try:
+            Album.objects.filter(id__in=ids_to_delete).delete()
+            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+        except ObjectDoesNotExist:
+            return Response({"message": "Album not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class BulkDeleteTracks(views.APIView):
+    permission_classes = [IsAuthenticatedWithJWT, IsAdminUser]
+
+    def post(self, request, *args, **kwargs):
+        ids_to_delete = request.data.get('ids', [])
+        try:
+            Track.objects.filter(id__in=ids_to_delete).delete()
+            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+        except ObjectDoesNotExist:
+            return Response({"message": "Track not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class BulkDeleteArtists(views.APIView):
+    permission_classes = [IsAuthenticatedWithJWT, IsAdminUser]
+
+    def post(self, request, *args, **kwargs):
+        ids_to_delete = request.data.get('ids', [])
+        try:
+            Artist.objects.filter(id__in=ids_to_delete).delete()
+            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+        except ObjectDoesNotExist:
+            return Response({"message": "Artist not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class BulkDeleteTrackArtistColab(views.APIView):
+    permission_classes = [IsAuthenticatedWithJWT, IsAdminUser]
+
+    def post(self, request, *args, **kwargs):
+        ids_to_delete = request.data.get('ids', [])
+        try:
+            TrackArtistColab.objects.filter(id__in=ids_to_delete).delete()
+            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+        except ObjectDoesNotExist:
+            return Response({"message": "TrackArtistColab not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+
+class ExecuteSQLView(views.APIView):
+    permission_classes = [IsAuthenticatedWithJWT, IsAdminUser]
+
+    def post(self, request, format=None):
+        raw_query = request.data.get('query')
+        with connection.cursor() as cursor:
+            cursor.execute(raw_query)
+            row = cursor.fetchall()
+        return Response(row)

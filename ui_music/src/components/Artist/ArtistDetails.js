@@ -18,6 +18,9 @@ const ArtistDetails = () => {
     const [totalPages, setTotalPages] = useState(0);
     const [errors, setErrors] = useState({});
     const { user, isAuthenticated } = useContext(AuthContext);
+    const { userPaginationSize} = useContext(AuthContext);
+    const { access } = useContext(AuthContext);
+
 
   
     const fetchArtist = useCallback(async () => {
@@ -45,8 +48,10 @@ const ArtistDetails = () => {
       }
 
       try {
-        await api.put(`/api/artists/${id}/`, artist);
-        navigate('/artists');
+        await api.put(`/api/artists/${id}/`, artist, {
+          headers: { Authorization: `Bearer ${access}` }
+        });
+        navigate(`/artists/${id}`);
       } catch (error) {
         toast.error('Error updating artist.');
         console.error('Error updating artist:', error);
@@ -55,7 +60,9 @@ const ArtistDetails = () => {
 
     const handleDelete = async () => {
       try {
-        await api.delete(`/api/artists/${id}/`);
+        await api.delete(`/api/artists/${id}/`, {
+          headers: { Authorization: `Bearer ${access}` }
+        });
         navigate('/artists');
       } catch (error) {
         console.error('Error deleting artist:', error);
@@ -66,7 +73,7 @@ const ArtistDetails = () => {
       setSearchQuery(trackName || query);
       if (query && !trackName) {
         try {
-          const response = await api.get(`/api/tracks/search/?q=${query}&page=${page}&size=5`); // Limit results to 5
+          const response = await api.get(`/api/tracks/search/?q=${query}&page=${page}&page_size=${userPaginationSize}`); // Limit results to 5
           setSearchResults(response.data.results);
           setTotalPages(response.data.total_pages);
         } catch (error) {
@@ -116,7 +123,9 @@ const ArtistDetails = () => {
 
       console.log(collaboration);
        try {
-        await api.post(`/api/artists/${id}/tracks/`, collaboration);
+        await api.post(`/api/artists/${id}/tracks/`, collaboration, {
+          headers: { Authorization: `Bearer ${access}` }
+        });
         fetchArtist();
         setSearchQuery('');
         setSearchResults([]);
@@ -218,7 +227,7 @@ const ArtistDetails = () => {
             <Grid item xs={12}>
               <List>
                 {searchResults.map((track) => (
-                  <ListItem key={track.id} ButtonBase onClick={() => handleTrackSelection(track.id, track.name)}>
+                  <ListItem key={track.id} button onClick={() => handleTrackSelection(track.id, track.name)}>
                     <ListItemText primary={track.name} />
                   </ListItem>
                 ))}

@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
+import { AuthContext } from '../../contexts/AuthContext';
+
 import {
   Container,
   Typography,
@@ -15,14 +17,16 @@ const TrackList = () => {
   const [tracks, setTracks] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const { userPaginationSize} = useContext(AuthContext);
+
 
   useEffect(() => {
     const fetchTracks = async () => {
       try {
         const response = await api.get('/api/tracks/', {
-          params: { page: currentPage, page_size: 10 },
+          params: { page: currentPage, page_size: userPaginationSize },
         });
-        setTracks(response.data.tracks);
+        setTracks(response.data.results);
         setTotalPages(response.data.total_pages);
       } catch (error) {
         console.error('Error fetching tracks:', error);

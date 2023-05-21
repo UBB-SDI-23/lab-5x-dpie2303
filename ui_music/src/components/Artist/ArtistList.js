@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useContext } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
 import {
@@ -10,19 +10,21 @@ import {
   Pagination,
 } from '@mui/material';
 import ArtistCard from './ArtistCard';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const ArtistList = () => {
   const [artists, setArtists] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const { userPaginationSize} = useContext(AuthContext);
 
   useEffect(() => {
     const fetchArtists = async () => {
       try {
         const response = await api.get('/api/artists/', {
-          params: { page: currentPage, page_size: 10 },
+          params: { page: currentPage, page_size: userPaginationSize},
         });
-        setArtists(response.data.artists);
+        setArtists(response.data.results);
         setTotalPages(response.data.total_pages);
       } catch (error) {
         console.error('Error fetching artists:', error);

@@ -1,22 +1,40 @@
 import React, { useState, useEffect } from 'react';
+import api from '../components/api';
+
 import { AuthContext } from './AuthContext';
+import { set } from 'react-hook-form';
+import { setRef } from '@mui/material';
 
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
+  const [access, setAccess] = useState(null);
+  const [refresh, setRefresh] = useState(null);
+  const [userPaginationSize, setPaginationSize] = useState(10); // Default value
+  const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
-    const access = localStorage.getItem('access');
-    const refresh = localStorage.getItem('refresh');
-    const storedUser = localStorage.getItem('user');
-    
-    if (access && refresh && storedUser) {
-      setIsAuthenticated(true);
-      setUser(JSON.parse(storedUser));
-      setToken({ access, refresh });
+    const fetchUserAndSetState = async () => {
+        setLoading(true);
+
+        const access = localStorage.getItem('access');
+        const refresh = localStorage.getItem('refresh');
+        const storedUser = localStorage.getItem('user');
+        if (access && refresh && storedUser) {
+            const userData = JSON.parse(storedUser)
+            setIsAuthenticated(true);
+            setUser(userData);
+            setAccess(access);
+            setRefresh(refresh);
+            console.log("User is authenticated");
+            
+        }
+        setLoading(false);
+
     }
-  }, []);
+    fetchUserAndSetState();
+}, []);
 
   const logout = () => {
     localStorage.removeItem('access');
@@ -25,12 +43,32 @@ export const AuthProvider = ({ children }) => {
     
     setIsAuthenticated(false);
     setUser(null);
-    setToken(null);
+    setAccess(null);
+    setRefresh(null);
   };
 
-  return (
-    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, user, setUser, token, setToken, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  if (loading) {
+    return <div>Loading...</div>;
+  } else {
+    return (
+      <AuthContext.Provider
+        value={{
+          isAuthenticated,
+          setIsAuthenticated,
+          user,
+          setUser,
+          access,
+          setAccess,
+          refresh,
+          setRefresh,
+          logout,
+          userPaginationSize,
+          setPaginationSize,
+          loading,
+        }}
+      >
+        {children}
+      </AuthContext.Provider>
+    );
+  }
 };

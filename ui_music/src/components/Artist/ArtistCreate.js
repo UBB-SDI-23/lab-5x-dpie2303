@@ -1,15 +1,16 @@
 // src/components/ArtistCreate.js
 import React, { useState,useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { toast , ToastContainer} from 'react-toastify';
 import api from '../api';
 import { Container, Typography, TextField, Button, Grid } from '@mui/material';
 import { AuthContext } from '../../contexts/AuthContext';
 
+
 const ArtistCreate = () => {
   const [artist, setArtist] = useState({
     name: '',
-    contry_of_origin: '',
+    country_of_origin: '',
     sex: '',
     description: '',
     birth_day: '',
@@ -18,6 +19,9 @@ const ArtistCreate = () => {
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
   const { user,isAuthenticated} = useContext(AuthContext);
+  const { access } = useContext(AuthContext);
+
+
 
 
   const handleChange = (event) => {
@@ -43,8 +47,11 @@ const ArtistCreate = () => {
     artist.user = user.id;
     event.preventDefault();
     try {
-      await api.post('/api/artists/', artist);
-      navigate('/artists');
+      console.log(artist);
+      const response = await api.post('/api/artists/', artist, {
+        headers: { Authorization: `Bearer ${access}` }
+      });
+      navigate('/artists/' + response.data.id + '/');
     } catch (error) {
       toast.error('Error creating artist.');
       console.error('Error creating artist:', error);
@@ -53,6 +60,7 @@ const ArtistCreate = () => {
 
   return (
     <Container>
+      <ToastContainer/>
       <Typography variant="h4" gutterBottom>
         Create Artist
       </Typography>
@@ -73,8 +81,8 @@ const ArtistCreate = () => {
               required
               fullWidth
               label="Country of Origin"
-              name="contry_of_origin"
-              value={artist.contry_of_origin}
+              name="country_of_origin"
+              value={artist.country_of_origin}
               onChange={handleChange}
             />
           </Grid>

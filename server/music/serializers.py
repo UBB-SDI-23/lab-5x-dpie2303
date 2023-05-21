@@ -4,10 +4,10 @@ from django.utils.crypto import get_random_string
 from django.contrib.auth.password_validation import validate_password
 from music.models import RecordCompany,UserProfile, Album,ConfirmationCode, Track, Artist, TrackArtistColab
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 
 
 CustomUser = get_user_model()
-
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -15,16 +15,24 @@ class CustomUserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ['username', 'email', 'is_regular', 'is_moderator', 'is_admin', 'id']
 
+
+class CustomUserCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'email', 'is_regular', 'is_moderator', 'is_admin', 'id','password']
+
 class UserProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
     albums_count = serializers.SerializerMethodField()
     tracks_count = serializers.SerializerMethodField()
     artists_count = serializers.SerializerMethodField()
     collaborations_count = serializers.SerializerMethodField()
+    recordcompanys_count = serializers.SerializerMethodField()
+
 
     class Meta:
         model = UserProfile
-        fields = ['username', 'bio', 'location', 'birth_date', 'gender', 'marital_status', 'albums_count', 'tracks_count', 'artists_count', 'collaborations_count']
+        fields = ['username', 'bio', 'location', 'birth_date', 'gender', 'marital_status', 'albums_count', 'tracks_count', 'artists_count', 'collaborations_count', 'recordcompanys_count']
 
     def get_albums_count(self, obj):
         return Album.objects.filter(user=obj.user).count()
@@ -37,6 +45,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_collaborations_count(self, obj):
         return TrackArtistColab.objects.filter(user=obj.user).count()
+    
+    def get_recordcompanys_count(self, obj):
+        return RecordCompany.objects.filter(user=obj.user).count()
 
 class AdminUserProfileSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer()
@@ -89,14 +100,13 @@ class RegisterSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
+
         user = CustomUser.objects.create(
+            password=make_password(validated_data['password']),
             username=validated_data['username'],
             email=validated_data['email'],
-        )
-
-        user.set_password(validated_data['password'])
-        user.save()
-        
+            is_regular=True
+        )        
         return user
 
 
@@ -145,14 +155,6 @@ class TrackLightSerializer(serializers.ModelSerializer):
         model = Track
         fields = ['id', 'name', 'released']
 
-
-
-
-
-class TrackDetailSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Track
-        fields = ['id','name', 'genres', 'description', 'bpm', 'released']
 
 
 class AlbumDetailSerializer(serializers.ModelSerializer):
@@ -206,10 +208,7 @@ class AlbumSerializer(serializers.ModelSerializer):
         model = Album
         fields = '__all__'
 
-class TrackDetailSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Track
-        fields = '__all__'
+
 
 class ArtistDetailSerializer(serializers.ModelSerializer):
     class Meta:
@@ -230,6 +229,11 @@ class ArtistSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class TrackDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Track
+        fields = '__all__'
+
 class TrackArtistColabSerializer(serializers.ModelSerializer):
     track = TrackDetailSerializer()
     artist = ArtistSerializer()
@@ -239,11 +243,7 @@ class TrackArtistColabSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class TrackArtistColabCreateSerializer(serializers.ModelSerializer):
-    track_id = serializers.IntegerField(write_only=True)
-    class Meta:
-        model = TrackArtistColab
-        fields = ('track_id', 'collaboration_type', 'royalty_percentage','user')
+
 
 class TrackArtistColabDetailSerializer(serializers.ModelSerializer):
     track = TrackDetailSerializer()
@@ -253,10 +253,7 @@ class TrackArtistColabDetailSerializer(serializers.ModelSerializer):
         model = TrackArtistColab
         fields = '__all__'
 
-class TrackArtistColabSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TrackArtistColab
-        fields = '__all__'
+
         
 class StatisticsSerializer(serializers.Serializer):
     average_copy_sales = serializers.DecimalField(max_digits=10, decimal_places=2)

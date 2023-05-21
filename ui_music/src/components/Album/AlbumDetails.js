@@ -1,14 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect,useContext, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
 import { Container, Typography, TextField, Button, Grid } from '@mui/material';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const AlbumDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [album, setAlbum] = useState(null);
   const [errors, setErrors] = useState({});
+  const { access } = useContext(AuthContext);
 
 
   const fetchAlbum = useCallback(async () => {
@@ -36,8 +38,10 @@ const AlbumDetail = () => {
     }
 
     try {
-      await api.put(`/api/albums/${id}/`, album);
-      navigate('/albums');
+      await api.put(`/api/albums/${id}/`, album, {
+        headers: { Authorization: `Bearer ${access}`}
+      });
+      navigate(`/albums/${id}`);
     } catch (error) {
       toast.error('Error updating album.');
       console.error('Error updating album:', error);
@@ -46,7 +50,9 @@ const AlbumDetail = () => {
 
   const handleDelete = async () => {
     try {
-      await api.delete(`/api/albums/${id}/`);
+      await api.delete(`/api/albums/${id}/`, {
+        headers: { Authorization: `Bearer ${access}` }
+      });
       navigate('/albums');
     } catch (error) {
       console.error('Error deleting album:', error);

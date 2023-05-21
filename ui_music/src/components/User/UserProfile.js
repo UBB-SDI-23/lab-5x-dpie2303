@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState, useContext, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useForm } from 'react-hook-form';
 import api from '../api';
-import { Container, Typography, TextField, Grid, MenuItem } from '@mui/material';
+import { Container, Typography,Button, TextField, Grid, MenuItem } from '@mui/material';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const UserProfile = () => {
   const [userProfile, setUserProfile] = useState({
@@ -13,9 +14,13 @@ const UserProfile = () => {
     birth_date: '',
     gender: '',
     marital_status: '',
+    albums_count: 0,
+    tracks_count: 0,
+    artists_count: 0,
+    collaborations_count: 0,
+    recordcompanys_count: 0,    
   });
 
-  const navigate = useNavigate();
   const {  handleSubmit, setValue, formState: { errors } } = useForm();
   const maritalStatusOptions = [
     { value: 'S', label: 'Single' },
@@ -24,8 +29,13 @@ const UserProfile = () => {
     { value: 'W', label: 'Widowed' },
   ];
 
+
   // Getting the user ID from the URL parameters
   const { userId } = useParams();
+
+  const { userPaginationSize, setPaginationSize} = useContext(AuthContext);
+  const { access } = useContext(AuthContext);
+
 
   useEffect(() => {
     // Fetch user's profile
@@ -42,25 +52,28 @@ const UserProfile = () => {
       });
   }, [userId, setValue]);
 
-  const onSubmit = async (data) => {
+  const onSubmit = async () => {
     let errors = {};
-    if (data.bio && data.bio.length > 500) {
+    if (userProfile.bio && userProfile.bio.length > 500) {
       errors.bio = "Bio cannot be more than 500 characters.";
     }
-    if (data.birth_date && new Date(data.birth_date) > new Date()) {
+    if (userProfile.birth_date && new Date(userProfile.birth_date) > new Date()) {
       errors.birth_date = "Birth date cannot be in the future.";
     }
-    if (data.marital_status && !maritalStatusOptions.find(option => option.value === data.marital_status)) {
+    if (userProfile.marital_status && !maritalStatusOptions.find(option => option.value === userProfile.marital_status)) {
       errors.marital_status = "Invalid marital status.";
     }
     if (Object.keys(errors).length > 0) {
       toast.error('Invalid inputs. Please correct the errors and try again.');
       return;
     }
+    console.log(access);
+    console.log(userProfile);
     try {
-      await api.put('/api/profile/', data);
+      await api.put(`/api/profile/${userId}/`, userProfile, {
+        headers: { Authorization: `Bearer ${access}` }
+      });
       toast.success('Profile updated successfully.');
-      navigate('/dashboard');
     } catch (error) {
       toast.error('Error updating profile.');
       console.error('Error updating profile:', error);
@@ -74,6 +87,11 @@ const UserProfile = () => {
       [name]: value,
     }));
   };
+
+  const handlePaginationSizeChange = (event) => {
+    setPaginationSize(event.target.value);
+  }
+
 
   return (
     <Container>
@@ -156,46 +174,77 @@ const UserProfile = () => {
                   shrink: true,
                 }}
               />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Tracks Count"
-            value={userProfile.tracks_count}
-            InputProps={{
-              readOnly: true,
-            }}
-            InputLabelProps={{
-              shrink: true,
-            }}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Artists Count"
-            value={userProfile.artists_count}
-            InputProps={{
-              readOnly: true,
-            }}
-            InputLabelProps={{
-              shrink: true,
-            }}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Collaborations Count"
-            value={userProfile.collaborations_count}
-            InputProps={{
-              readOnly: true,
-            }}
-            InputLabelProps={{
-              shrink: true,
-            }}
-          />
-        </Grid>
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Tracks Count"
+                  value={userProfile.tracks_count}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Artists Count"
+                  value={userProfile.artists_count}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Collaborations Count"
+                  value={userProfile.collaborations_count}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Record Companys Count"
+                  value={userProfile.recordcompanys_count}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+              <Button type="submit" variant="contained" color="primary">
+              Update Profile
+              </Button>
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Pagination Size"
+                  name="paginationSize"
+                  value={userPaginationSize}
+                  onChange={handlePaginationSizeChange}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </Grid>
         </Grid>
       </form>
     </Container>
