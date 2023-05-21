@@ -35,7 +35,7 @@ def custom_paginate(queryset, page, page_size):
     end = start + page_size
 
     
-    total_items = queryset.count()  # Get the exact count
+    total_items = queryset.values('id').count()  # Get the exact count
     total_pages = ceil(total_items / page_size)
     sliced_queryset = queryset[start:end]
     # Use raw SQL for pagination
