@@ -4,7 +4,6 @@ import {
   Route,
   Link,
   Routes,
-  useNavigate,
 } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Container, Button } from '@mui/material';
 import ArtistList from './components/Artist/ArtistList';
