@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useContext,useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import {
   Container,
@@ -29,11 +29,11 @@ const AdminBulkDelete = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [selected, setSelected] = useState([]);
   const [type, setType] = useState('record_companies');
-  const { userPaginationSize, access } = useContext(AuthContext);
+  const { userPaginationSize, access, user, isAuthenticated} = useContext(AuthContext);
   const [sqlQuery, setSqlQuery] = useState('');
   const [sqlResult, setSqlResult] = useState('');
   const [view, setView] = useState('bulkDelete'); // new state for switching views
-
+  const navigate = useNavigate();
   // Method to handle the SQL Query execution
   const executeSqlQuery = async () => {
     try {
@@ -55,6 +55,28 @@ const AdminBulkDelete = () => {
     }
     setSelected([]);
   };
+  const fetchItems = useCallback(async () => {
+    try {
+      const response = await api.get(`/api/${type}/`, {
+        params: {
+          page: currentPage,
+          page_size: userPaginationSize,
+        },
+        headers: { Authorization: `Bearer ${access}` },
+      });
+      setTotalPages(response.data.total_pages);
+      if(type === 'trackartistcolab') {
+        const formattedData = response.data.results.map(item => ({...item, name: `${item.artist.name} - ${item.track.name}`}));
+        setItems(formattedData);
+      } else {
+        setItems(response.data.results);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, [type, currentPage, userPaginationSize, access]); 
+
+
 
   const handleClick = (event, id) => {
     const selectedIndex = selected.indexOf(id);
@@ -98,29 +120,12 @@ const AdminBulkDelete = () => {
   };
 
   useEffect(() => {
+    if(!isAuthenticated || !user.is_admin) {
+      navigate('/');
+    };
     fetchItems();
-  }, [currentPage, type, userPaginationSize]);
+  }, [currentPage, type, userPaginationSize,isAuthenticated,user,navigate,fetchItems]);
 
-  const fetchItems = async () => {
-    try {
-      const response = await api.get(`/api/${type}/`, {
-        params: {
-          page: currentPage,
-          page_size: userPaginationSize,
-        },
-        headers: { Authorization: `Bearer ${access}` },
-      });
-      setTotalPages(response.data.total_pages);
-      if(type === 'trackartistcolab') {
-        const formattedData = response.data.results.map(item => ({...item, name: `${item.artist.name} - ${item.track.name}`}));
-        setItems(formattedData);
-      } else {
-        setItems(response.data.results);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
 
   const isSelected = (id) => selected.indexOf(id) !== -1;
@@ -128,10 +133,7 @@ const AdminBulkDelete = () => {
   const handlePageChange = (event, value) => {
     setCurrentPage(value );
   };
-  const toggleView = () => {
-    setView((prevView) => prevView === 'bulkDelete' ? 'executeSQL' : 'bulkDelete');
-  };
-  
+
   return (
     <Container>
       <Box sx={{ width: '100%' }}>

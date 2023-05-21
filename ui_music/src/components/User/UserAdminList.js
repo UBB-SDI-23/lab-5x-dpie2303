@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import {
   Container,
@@ -21,11 +21,10 @@ const UserAdminList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [query, setQuery] = useState('');
   const { userPaginationSize } = useContext(AuthContext);
-  const { access } = useContext(AuthContext);
-
+  const { access , user, isAuthenticated} = useContext(AuthContext);
+  const navigate = useNavigate();
   const fetchUsers = useCallback(async () => {
     try {
-    console.log(access);
     const response = await api.get('api/admin/profiles/', {
         params: { page: currentPage, page_size: userPaginationSize, q: query },
         headers: { Authorization: `Bearer ${access}` }
@@ -35,11 +34,14 @@ const UserAdminList = () => {
     } catch (error) {
       console.error('Error fetching users:', error);
     }
-  }, [currentPage, query, userPaginationSize]);
+  }, [currentPage, query, userPaginationSize,access]);
 
   useEffect(() => {
+    if(!isAuthenticated || !user.is_admin) {
+      navigate('/');
+    };
     fetchUsers();
-  }, [fetchUsers]);
+  }, [fetchUsers, isAuthenticated,user,navigate]);
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);

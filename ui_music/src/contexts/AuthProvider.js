@@ -1,9 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import api from '../components/api';
-
+import React, { useState, useEffect  } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
-import { set } from 'react-hook-form';
-import { setRef } from '@mui/material';
 
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -12,7 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [refresh, setRefresh] = useState(null);
   const [userPaginationSize, setPaginationSize] = useState(10); // Default value
   const [loading, setLoading] = useState(true);
-
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserAndSetState = async () => {
@@ -31,6 +28,7 @@ export const AuthProvider = ({ children }) => {
             
         }
         setLoading(false);
+        
 
     }
     fetchUserAndSetState();
@@ -45,6 +43,8 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setAccess(null);
     setRefresh(null);
+
+    navigate('/login');
   };
 
   if (loading) {

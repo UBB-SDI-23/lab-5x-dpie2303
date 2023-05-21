@@ -28,6 +28,8 @@ const AlbumCreate = () => {
   const { userPaginationSize} = useContext(AuthContext);
   const { access } = useContext(AuthContext);
 
+  // define whether the input should be editable
+  const isEditable = isAuthenticated 
 
   
   const handleRecordCompanySearch = async (query, page) => {
@@ -102,6 +104,9 @@ const AlbumCreate = () => {
               name="name"
               value={album.name}
               onChange={handleChange}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -111,6 +116,9 @@ const AlbumCreate = () => {
               name="description"
               value={album.description}
               onChange={handleChange}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -121,6 +129,9 @@ const AlbumCreate = () => {
               name="top_rank"
               value={album.top_rank}
               onChange={handleChange}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -133,6 +144,9 @@ const AlbumCreate = () => {
               onChange={handleChange}
               error={errors.copy_sales ? true : false}
               helperText={errors.copy_sales}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -146,6 +160,9 @@ const AlbumCreate = () => {
               onChange={handleChange}
               InputLabelProps={{
                 shrink: true,
+              }}
+              InputProps={{
+                readOnly: !isEditable,
               }}
             />
           </Grid>
@@ -172,7 +189,7 @@ const AlbumCreate = () => {
             }
           </Grid>
           <Grid item xs={12}>
-            <Button type="submit" variant="contained" color="primary">
+            <Button type="submit" variant="contained" color="primary" disabled={!isEditable}>
               Create
             </Button>
           </Grid>

@@ -34,7 +34,7 @@ const TrackList = () => {
     };
 
     fetchTracks();
-  }, [currentPage]);
+  }, [currentPage,userPaginationSize]);
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);

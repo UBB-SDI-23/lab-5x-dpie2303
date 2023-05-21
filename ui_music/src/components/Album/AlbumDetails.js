@@ -11,16 +11,19 @@ const AlbumDetail = () => {
   const [album, setAlbum] = useState(null);
   const [errors, setErrors] = useState({});
   const { access } = useContext(AuthContext);
+  const {user,isAuthenticated} = useContext(AuthContext);
+  const [isEditable, setIsEditable] = useState(false);
 
 
   const fetchAlbum = useCallback(async () => {
     try {
       const response = await api.get(`/api/albums/${id}/`);
       setAlbum(response.data);
+      setIsEditable((isAuthenticated && (user.is_admin || user.is_moderator)) || (isAuthenticated && response.data.user.id === user.id));
     } catch (error) {
       console.error('Error fetching album:', error);
     }
-  }, [id]);
+  }, [id,isAuthenticated,user]);
 
   useEffect(() => {
     fetchAlbum();
@@ -42,6 +45,8 @@ const AlbumDetail = () => {
         headers: { Authorization: `Bearer ${access}`}
       });
       navigate(`/albums/${id}`);
+      setIsEditable((isAuthenticated && (user.is_admin || user.is_moderator)) || (isAuthenticated && album.user.id === user.id));
+
     } catch (error) {
       toast.error('Error updating album.');
       console.error('Error updating album:', error);
@@ -78,6 +83,9 @@ const AlbumDetail = () => {
               name="name"
               value={album.name}
               onChange={(event) => setAlbum({ ...album, name: event.target.value })}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -88,6 +96,9 @@ const AlbumDetail = () => {
               name="description"
               value={album.description}
               onChange={(event) => setAlbum({ ...album, description: event.target.value })}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
             <Grid item xs={12}>
@@ -102,6 +113,9 @@ const AlbumDetail = () => {
                 InputLabelProps={{
                 shrink: true,
                 }}
+                InputProps={{
+                  readOnly: !isEditable,
+                }}
             />
             </Grid>
             <Grid item xs={12}>
@@ -112,6 +126,9 @@ const AlbumDetail = () => {
                 name="top_rank"
                 value={album.top_rank}
                 onChange={(event) => setAlbum({ ...album, top_rank: event.target.value })}
+                InputProps={{
+                  readOnly: !isEditable,
+                }}
             />
             </Grid>
             <Grid item xs={12}>
@@ -124,13 +141,16 @@ const AlbumDetail = () => {
                 onChange={(event) => setAlbum({ ...album, copy_sales: event.target.value })}
                 error={errors.copy_sales ? true : false}
                 helperText={errors.copy_sales}
+                InputProps={{
+                  readOnly: !isEditable,
+                }}
             />
             </Grid>
           <Grid item xs={12}>
-            <Button onClick={handleUpdate} variant="contained" color="primary">
+            <Button onClick={handleUpdate}  disabled={!isEditable} variant="contained" color="primary">
               Update Album
             </Button>
-            <Button onClick={handleDelete} variant="contained" color="secondary">
+            <Button onClick={handleDelete}  disabled={!isEditable} variant="contained" color="secondary">
               Delete Album
             </Button>
           </Grid>

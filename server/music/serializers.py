@@ -9,6 +9,10 @@ from django.contrib.auth.hashers import make_password
 
 CustomUser = get_user_model()
 
+class UserLightSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username']
 
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,7 +26,7 @@ class CustomUserCreateSerializer(serializers.ModelSerializer):
         fields = ['username', 'email', 'is_regular', 'is_moderator', 'is_admin', 'id','password']
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source='user.username', read_only=True)
+    user = UserLightSerializer(read_only=True)
     albums_count = serializers.SerializerMethodField()
     tracks_count = serializers.SerializerMethodField()
     artists_count = serializers.SerializerMethodField()
@@ -32,7 +36,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        fields = ['username', 'bio', 'location', 'birth_date', 'gender', 'marital_status', 'albums_count', 'tracks_count', 'artists_count', 'collaborations_count', 'recordcompanys_count']
+        fields = ['user', 'bio', 'location', 'birth_date', 'gender', 'marital_status', 'albums_count', 'tracks_count', 'artists_count', 'collaborations_count', 'recordcompanys_count']
 
     def get_albums_count(self, obj):
         return Album.objects.filter(user=obj.user).count()
@@ -110,10 +114,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
-class UserLightSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = ['id', 'username']
 
 
 class ArtistListSerializer(serializers.ModelSerializer):
@@ -158,9 +158,10 @@ class TrackLightSerializer(serializers.ModelSerializer):
 
 
 class AlbumDetailSerializer(serializers.ModelSerializer):
+    user = UserLightSerializer(read_only=True)
     class Meta:
         model = Album
-        fields = ['id','name', 'description', 'top_rank', 'copy_sales', 'release_date']
+        fields = ['id','name', 'description', 'top_rank', 'copy_sales', 'release_date','user']
 
 
 class ArtistCreateSerializer(serializers.ModelSerializer):
@@ -211,9 +212,10 @@ class AlbumSerializer(serializers.ModelSerializer):
 
 
 class ArtistDetailSerializer(serializers.ModelSerializer):
+    user = UserLightSerializer(read_only=True)
     class Meta:
         model = Artist
-        fields = '__all__'
+        fields = ['user','id', 'name', 'country_of_origin', 'sex', 'description', 'birth_day']
 
 
 class TrackSerializer(serializers.ModelSerializer):
@@ -230,9 +232,10 @@ class ArtistSerializer(serializers.ModelSerializer):
 
 
 class TrackDetailSerializer(serializers.ModelSerializer):
+    user = UserLightSerializer(read_only=True)
     class Meta:
         model = Track
-        fields = '__all__'
+        fields = ['user', 'id', 'name', 'genres', 'description', 'bpm', 'released', 'album']
 
 class TrackArtistColabSerializer(serializers.ModelSerializer):
     track = TrackDetailSerializer()

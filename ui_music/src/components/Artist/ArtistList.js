@@ -32,7 +32,7 @@ const ArtistList = () => {
     };
 
     fetchArtists();
-  }, [currentPage]);
+  }, [currentPage,userPaginationSize]);
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);

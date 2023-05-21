@@ -10,16 +10,20 @@ const TrackDetail = () => {
   const [track, setTrack] = useState(null);
   const [errors, setErrors] = useState({});
   const { access } = useContext(AuthContext);
+  const [isEditable, setIsEditable] = useState(false);
+  const {user,isAuthenticated} = useContext(AuthContext);
 
 
   const fetchTrack = useCallback(async () => {
     try {
       const response = await api.get(`/api/tracks/${id}/`);
       setTrack(response.data);
+      setIsEditable((isAuthenticated && (user.is_admin || user.is_moderator)) || (isAuthenticated && response.data.user.id === user.id));
+
     } catch (error) {
       console.error('Error fetching track:', error);
     }
-  }, [id]);
+  }, [id, isAuthenticated,user]);
 
   useEffect(() => {
     fetchTrack();
@@ -79,6 +83,9 @@ const TrackDetail = () => {
               name="name"
               value={track.name}
               onChange={(event) => setTrack({ ...track, name: event.target.value })}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -89,6 +96,9 @@ const TrackDetail = () => {
               name="genres"
               value={track.genres}
               onChange={(event) => setTrack({ ...track, genres: event.target.value })}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -99,6 +109,9 @@ const TrackDetail = () => {
               name="description"
               value={track.description}
               onChange={(event) => setTrack({ ...track, description: event.target.value })}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -111,6 +124,9 @@ const TrackDetail = () => {
               onChange={(event) => setTrack({ ...track, bpm: event.target.value })}
               error={errors.bpm ? true : false}
               helperText={errors.bpm}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -123,13 +139,16 @@ const TrackDetail = () => {
               onChange={(event) => setTrack({ ...track, released: event.target.value })}
               error={errors.released ? true : false}
               helperText={errors.released}
+              InputProps={{
+                readOnly: !isEditable,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
-            <Button onClick={handleUpdate} variant="contained" color="primary">
+            <Button onClick={handleUpdate} disabled={!isEditable}  variant="contained" color="primary">
               Update Track
             </Button>
-            <Button onClick={handleDelete} variant="contained" color="secondary">
+            <Button onClick={handleDelete}  disabled={!isEditable} variant="contained" color="secondary">
               Delete Track
             </Button>
           </Grid>

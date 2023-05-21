@@ -28,7 +28,7 @@ const StatsView = () => {
         } catch (error) {
             console.error(`Error fetching data: ${error}`);
         }
-    }, [view, page]);
+    }, [view, page,userPaginationSize]);
 
     useEffect(() => {
         fetchData();
