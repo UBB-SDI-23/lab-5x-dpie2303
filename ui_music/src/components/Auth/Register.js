@@ -12,9 +12,9 @@ const  Register = () => {
 
   const onSubmit = data => {
        api.post('/api/register/', data)
-      .then(response => {
-        alert('A confirmation Link: ' +  process.env.REACT_APP_API_BASE_URL + '/api/register/confirm/'  + response.data.confirmation_code);
-        navigate('/login');
+      .then(response => {      
+        console.log(response.data.confirmation_code);
+        navigate(`/login/confirm/${response.data.confirmation_code}`);
       })
       .catch(error => {
         console.error(error.response.data); // This will print the error message to the console

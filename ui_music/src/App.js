@@ -18,6 +18,7 @@ import AlbumCreate from './components/Album/AlbumCreate';
 import AlbumDetails from './components/Album/AlbumDetails';
 import Register from './components/Auth/Register';
 import Login from './components/Auth/Login';
+import UserConfirmation from './components/Auth/UserConfirmation';
 import UserProfile from './components/User/UserProfile';
 import UserAdminList from './components/User/UserAdminList';
 import UserAdminDetails from './components/User/UserAdminDetails';
@@ -57,7 +58,7 @@ function AppContent() {
             </Typography>
             {isAuthenticated ? (
               <>
-                <Button color="inherit" component={Link} to={`/userprofile/${user.id}`}>
+                <Button data-testid="user-profile-button" color="inherit" component={Link} to={`/userprofile/${user.id}`}>
                   {user.username}
                 </Button>
                 <Button color="inherit" onClick={logout}>
@@ -160,6 +161,7 @@ function AppContent() {
               <Route path="/statistics" element={<StatsView />} />
               <Route path="/register" element={<Register />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/login/confirm/:token" element={<UserConfirmation />} />
               <Route path="/userprofile/:userId" element={<UserProfile />} />
               <Route path="/admin/users" element={<UserAdminList />} />
               <Route path="/admin/profiles/:userId" element={<UserAdminDetails />} />
