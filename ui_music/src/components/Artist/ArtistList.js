@@ -53,6 +53,7 @@ const ArtistList = () => {
         </Typography>
         <Button
           component={Link}
+          data-testid="add-artist"
           to="/artists/create"
           variant="contained"
           color="primary"

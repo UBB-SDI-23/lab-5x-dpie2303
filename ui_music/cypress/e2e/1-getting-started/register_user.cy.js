@@ -6,33 +6,6 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
-
-  function checkAlert(attempts = 0) {
-    // Max number of attempts to find and visit the confirmation link
-    const maxAttempts = 10;
-  
-    cy.window().then((win) => {
-        cy.wrap(win).should((win) => {
-          if (win.alert) {
-            cy.on('window:alert', (str) => {
-              let confirmLink = str.split(' ').slice(-1); 
-              cy.visit(confirmLink);
-            });
-          } else if (attempts >= maxAttempts) {
-            // If alert didn't appear after maxAttempts, stop checking
-            throw new Error('Could not find confirmation link after 10 attempts');
-          } else {
-            // If alert didn't appear, wait 1 second and check again
-            cy.wait(1000);
-            attempts++;
-            // Repeat the assertion until it passes
-            return false;
-          }
-        });
-      });
-
-  }
-
 describe('User journey', () => {
   it('Registers a new user and updates their profile', () => {
     // Generate random user data
@@ -58,6 +31,8 @@ describe('User journey', () => {
     // Submit the form
     cy.get('button[type="submit"]').click();
 
+    cy.wait(1000);
+
     // Go to login page
     cy.visit(`${base_url}/login`);
 
@@ -78,20 +53,38 @@ describe('User journey', () => {
     
     
     cy.get('[data-testid=user-profile-button]').click()
+   // Update profile with random generated data
+   cy.contains('label', 'Bio').parent().find('input').clear().type('test bio');
+   cy.get('input[name="location"]').clear().type("test location");
+   cy.get('input[name="birth_date"]').clear().type(yesterday);
+   cy.get('input[name="gender"]').clear().type('F');
+
+   // Assuming your Select component has data-testid attribute
+   // cy.get('[data-testid=marital-select-button]').click({ force: true }).contains('li', 'Single').click({ force: true });
+  
+   cy.get('button[type="submit"]').click();
+
+ 
+   // Refresh the page
+   cy.reload();
+   cy.wait(1000);
+
+   // Assert the data
+   cy.contains('label', 'Bio').parent().find('input').should('have.value', 'test bio');
+   cy.get('input[name="location"]').should('have.value', "test location");
+   cy.get('input[name="birth_date"]').should('have.value', yesterday);
+   cy.get('input[name="gender"]').should('have.value', 'F');
+   
+   // Logout
+   cy.contains('Button', 'Logout').click();
+
+   cy.window().then((window) => {
+    expect(window.localStorage.getItem('access')).to.not.exist;
+    expect(window.localStorage.getItem('refresh')).to.not.exist;
+    expect(window.localStorage.getItem('user')).to.not.exist;
+  });
 
 
-    // Update profile with random generated data
-    cy.get('input[name="bio"]').type("test bio");
-    cy.get('input[name="location"]').clear().type("test location");
-    cy.get('input[name="birth_date"]').clear().type(yesterday);
-    cy.get('input[name="gender"]').clear().type('F');
 
-    cy.get('select[name="marital_status"]').select('Single');
-
-    // Submit the profile form
-    cy.get('button[type="submit"]').click();
-
-    // Logout
-    cy.visit('/logout');
   });
 });

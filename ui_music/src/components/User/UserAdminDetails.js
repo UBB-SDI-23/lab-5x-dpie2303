@@ -86,18 +86,21 @@ const UserAdminDetails = () => {
           </Grid>
           <Grid item xs={12}>
             <FormControlLabel
+              name="is_regular"
               control={<Switch checked={userProfile.is_regular} onChange={(event) => setUser({ ...userProfile, is_regular: event.target.checked })} />}
               label="Regular User"
             />
           </Grid>
           <Grid item xs={12}>
             <FormControlLabel
+              name="is_moderator"
               control={<Switch checked={userProfile.is_moderator} onChange={(event) => setUser({ ...userProfile, is_moderator: event.target.checked })} />}
               label="Moderator User"
             />
           </Grid>
           <Grid item xs={12}>
             <FormControlLabel
+              name="is_admin"
               control={<Switch checked={userProfile.is_admin} onChange={(event) => setUser({ ...userProfile, is_admin: event.target.checked })} />}
               label="Admin User"
             />

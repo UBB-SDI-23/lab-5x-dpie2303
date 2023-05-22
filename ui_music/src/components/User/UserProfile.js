@@ -159,6 +159,7 @@ const UserProfile = () => {
           </Grid>
           <Grid item xs={12}>
             <TextField
+              data-testid="marital-select-button"
               fullWidth
               select
               label="Marital Status"
