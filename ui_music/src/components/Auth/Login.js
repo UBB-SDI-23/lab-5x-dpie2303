@@ -12,7 +12,6 @@ const Login = () => {
   const [ setServerErrors] = useState({});
   const navigate = useNavigate(); // Use useNavigate instead of Navigate
 
-
   const onSubmit = async data => {
     try {
         const response = await api.post('/api/token/', data)

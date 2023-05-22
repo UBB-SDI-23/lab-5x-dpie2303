@@ -19,7 +19,7 @@ const UserAdminCard = ({ user }) => {
         <Typography variant="subtitle1">Admin: {user.is_admin ? 'Yes' : 'No'}</Typography>
       </CardContent>
       <CardActions>
-        <Button component={Link} to={`/admin/profiles/${user.id}`} variant="outlined">
+        <Button data-testid={`view-details-${user.id}`} component={Link} to={`/admin/profiles/${user.id}`} variant="outlined">
           View Details
         </Button>
       </CardActions>

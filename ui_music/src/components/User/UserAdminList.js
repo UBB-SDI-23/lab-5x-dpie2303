@@ -66,6 +66,7 @@ const UserAdminList = () => {
         </Typography>
         <div>
           <TextField
+            name='user_search'
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             label="Search Users"
