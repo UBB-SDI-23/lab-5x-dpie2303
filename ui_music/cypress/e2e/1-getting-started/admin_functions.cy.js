@@ -4,7 +4,9 @@ describe('Admin journey', () => {
       const username = 'admin_1';
       const password = 'Password.123';
       const base_url = 'http://localhost:3000';
-  
+    
+
+
       // Visit the login page
       cy.visit(`${base_url}/login`);
   
@@ -15,6 +17,13 @@ describe('Admin journey', () => {
   
       cy.wait(1000);
   
+    //   cy.get('button[data-testid="manage-users-button"]').click();
+    //   cy.contains('Button', 'Manage Users').click();
+    //   cy.get('button').contains('Delete User').click();
+
+    //   cy.get('button:contains("Manage Users")').click();
+  
+
       // Go to edit user page
       cy.visit(`${base_url}/admin/users`);
   

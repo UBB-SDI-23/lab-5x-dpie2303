@@ -29,7 +29,7 @@ services:
             #  gunicorn -b 0.0.0.0:8000 music_library.wsgi &&
             #  python manage.py runserver 0.0.0.0:8000
             #  gunicorn -b 0.0.0.0:8000 music_library.wsgi
-               gunicorn -b 0.0.0.0:8000 music_library.wsgi"
+               python manage.py runserver 0.0.0.0:8000"
             
     depends_on:
       - db
@@ -39,30 +39,3 @@ services:
       - .env
     environment:
       - DJANGO_INTERACTIVE=no
-
-  nginx:
-    container_name: nginx
-    image: nginx:latest
-    environment:
-      - DOMAIN
-    depends_on:
-      - server
-    ports:
-      - 80:80
-      - 443:443
-    volumes:
-      - ./etc/nginx/templates:/etc/nginx/templates:ro
-      - ./etc/letsencrypt:/etc/letsencrypt:ro
-      - ./certbot/data:/var/www/certbot
-  certbot:
-    container_name: certbot
-    image: certbot/certbot:latest
-    depends_on:
-      - nginx
-    command: >-
-             certonly --reinstall --webroot --webroot-path=/var/www/certbot
-             --email ${EMAIL} --agree-tos --no-eff-email
-             -d ${DOMAIN}
-    volumes:
-      - ./etc/letsencrypt:/etc/letsencrypt
-      - ./certbot/data:/var/www/certbot

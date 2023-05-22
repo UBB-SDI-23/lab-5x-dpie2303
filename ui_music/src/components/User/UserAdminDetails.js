@@ -85,26 +85,47 @@ const UserAdminDetails = () => {
             />
           </Grid>
           <Grid item xs={12}>
-            <FormControlLabel
-              name="is_regular"
-              control={<Switch checked={userProfile.is_regular} onChange={(event) => setUser({ ...userProfile, is_regular: event.target.checked })} />}
-              label="Regular User"
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <FormControlLabel
-              name="is_moderator"
-              control={<Switch checked={userProfile.is_moderator} onChange={(event) => setUser({ ...userProfile, is_moderator: event.target.checked })} />}
-              label="Moderator User"
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <FormControlLabel
-              name="is_admin"
-              control={<Switch checked={userProfile.is_admin} onChange={(event) => setUser({ ...userProfile, is_admin: event.target.checked })} />}
-              label="Admin User"
-            />
-          </Grid>
+  <FormControlLabel
+    name="is_regular"
+    control={
+      <Switch checked={userProfile.is_regular} 
+      onChange={(event) => setUser({ 
+        ...userProfile, 
+        is_regular: event.target.checked, 
+        is_moderator: event.target.checked ? false : userProfile.is_moderator, 
+        is_admin: event.target.checked ? false : userProfile.is_admin })} 
+      />}
+    label="Regular User"
+  />
+        </Grid>
+        <Grid item xs={12}>
+          <FormControlLabel
+            name="is_moderator"
+            control={
+              <Switch checked={userProfile.is_moderator} 
+              onChange={(event) => setUser({ 
+                ...userProfile, 
+                is_moderator: event.target.checked, 
+                is_regular: event.target.checked ? false : userProfile.is_regular, 
+                is_admin: event.target.checked ? false : userProfile.is_admin })} 
+              />}
+            label="Moderator User"
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <FormControlLabel
+            name="is_admin"
+            control={
+              <Switch checked={userProfile.is_admin} 
+              onChange={(event) => setUser({ 
+                ...userProfile, 
+                is_admin: event.target.checked, 
+                is_regular: event.target.checked ? false : userProfile.is_regular, 
+                is_moderator: event.target.checked ? false : userProfile.is_moderator })} 
+              />}
+            label="Admin User"
+          />
+        </Grid>
           <Grid item xs={12}>
             <Button onClick={handleUpdate} variant="contained" color="primary">
               Update User
