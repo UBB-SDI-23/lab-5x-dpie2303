@@ -35,7 +35,7 @@ def custom_paginate(queryset, page, page_size):
     end = start + page_size
 
     
-    total_items = queryset.values('id').count()  # Get the exact count
+    total_items = queryset.count()  # Get the exact count
     total_pages = ceil(total_items / page_size)
     sliced_queryset = queryset[start:end]
     # Use raw SQL for pagination
@@ -175,6 +175,7 @@ class RegisterView(views.APIView):
             code = get_random_string(length=32)
             ConfirmationCode.objects.create(user=user, code=code, expiry_date=timezone.now()+timedelta(minutes=10))
             # TODO: send email with the confirmation code to the user
+            logging.info(f"code: {code}") 
             return Response({"message": "User registered successfully. A confirmation code has been sent.", "confirmation_code": code}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

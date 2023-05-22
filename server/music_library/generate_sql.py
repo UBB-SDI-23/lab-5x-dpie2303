@@ -247,7 +247,7 @@ def generate_user_profiles_sql(num_users, batch_size=1000):
 if __name__ == "__main__":
     num_record_companies = 1000000
     num_albums = 1000000
-    num_tracks = 10000000
+    num_tracks = 1000000
     num_artists = 1000000
     num_colabs = 10000000
     num_users = 10000
