@@ -62,6 +62,8 @@ describe('Artist journey', () => {
         cy.get('button:contains("Update")').click();
 
 
+        cy.wait(1000);
+        
         // Assert that the form fields have been updated
         cy.get('input[name="name"]').should('have.value', updatedArtist.name);
         cy.get('input[name="sex"]').should('have.value', updatedArtist.sex);

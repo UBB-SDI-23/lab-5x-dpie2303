@@ -67,10 +67,10 @@ function AppContent() {
               </>
             ) : (
               <>
-                <Button color="inherit" component={Link} to="/register">
+                <Button data-testid="register-button" color="inherit" component={Link} to="/register">
                   Register
                 </Button>
-                <Button color="inherit" component={Link} to="/login">
+                <Button data-testid="login-button"  color="inherit" component={Link} to="/login">
                   Login
                 </Button>
               </>
@@ -127,6 +127,7 @@ function AppContent() {
                       <React.Fragment>
                       <Button
                         variant="contained"
+                        data-testid="manage-users-button"
                         color="primary"
                         component={Link}
                         to="/admin/users"
