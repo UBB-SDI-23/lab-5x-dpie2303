@@ -14,7 +14,6 @@ class IsAdminUser(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        logger.info(f"request.user: {request.user.is_admin}")
         return request.user.is_admin
 
 
@@ -26,17 +25,14 @@ class IsAuthenticatedWithJWT(permissions.BasePermission):
             user = self._get_user_from_token(token)
             if user:
                 request.user = user
-                logging.info("JWT VALID")
                 return True
         if request.method == 'GET':
             return True
-        logging.info("JWT NOT VALID")
         return False
 
     def _get_token_from_request(self, request):
         
         auth_header = request.META.get('HTTP_AUTHORIZATION', '').split()
-        logging.info(f"auth_header: {auth_header}")
         if len(auth_header) == 2 and auth_header[0].lower() == 'bearer':
             return auth_header[1]
         return None
@@ -55,14 +51,9 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
     """
     def has_object_permission(self, request, view, obj):
 
-        # logging.info(f"request.user: {request.user}")
-        # logging.info(f"obj.user: {obj.user}")
-        # logging.info(f"obj: {obj}")
-
         # Read permissions are allowed to any request,
         # so we'll always allow GET, HEAD or OPTIONS requests.
         if request.method == 'GET' or request.user.is_admin or request.user.is_moderator:
-            logging.info("GET")
             return True
         
         if isinstance(obj, CustomUser):

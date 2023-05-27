@@ -27,8 +27,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-y#%tq*_rkh5r-30a*xn6wn_ny23wizu6arn*@a%a@6o&=ri4y%'
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', default=False)
+DEBUG = bool(os.environ.get('DEBUG', default=False))
+logger.error(f"DEBUG MODE = {DEBUG}")
+logger.error(f"DEBUG MODE = {type(DEBUG)}")
+
 #author
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
@@ -42,7 +49,10 @@ REST_FRAMEWORK = {
 }
 
 
-
+if DEBUG == False:
+    REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = (
+        'rest_framework.renderers.JSONRenderer',
+    )
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
@@ -63,17 +73,17 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
     'drf_yasg',
-    'debug_toolbar',
-
 ]
+if DEBUG == True:
+    INSTALLED_APPS += ['django.contrib.staticfiles']
+    INSTALLED_APPS += ['debug_toolbar']
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -81,8 +91,13 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
+
+if DEBUG == True:
+    MIDDLEWARE += ['whitenoise.middleware.WhiteNoiseMiddleware']
+    MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
+
+
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -107,10 +122,12 @@ INTERNAL_IPS = [
     '0.0.0.0'
 ]
 
-STATIC_URL = '/static/'
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+if DEBUG == True:
+    STATIC_URL = '/static/'
+
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 def show_toolbar(request):
