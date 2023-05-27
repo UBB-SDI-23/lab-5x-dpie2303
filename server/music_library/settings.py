@@ -34,7 +34,6 @@ logger = logging.getLogger(__name__)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(os.environ.get('DEBUG', default=False))
 logger.error(f"DEBUG MODE = {DEBUG}")
-logger.error(f"DEBUG MODE = {type(DEBUG)}")
 
 #author
 AUTH_USER_MODEL = 'accounts.CustomUser'
