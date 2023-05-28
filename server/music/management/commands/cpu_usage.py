@@ -17,7 +17,7 @@ class Command(MakeMigrationsCommand):
         while time.time() - start_time < DURATION:
             cpu_percentages.append((time.time(), psutil.cpu_percent(interval=FREQUENCY)))
 
-        with open('sql_scripts/cpu_usage.csv', 'w', newline='') as file:
+        with open('testing/cpu_usage.csv', 'w', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(["Timestamp", "CPU Usage (%)"])
             writer.writerows(cpu_percentages)
