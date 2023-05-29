@@ -13,7 +13,7 @@ from music.serializers import (RecordCompanySerializer, TrackArtistColabCreateSe
                           RecordCompanyAverageSalesSerializer,ArtistDetailSerializer,
                            TrackArtistColabDetailSerializer , RecordCompanyAverageSalesSerializer,
                           TrackDetailSerializer,UserProfileSerializer, RegisterSerializer, TrackArtistColabSerializer, 
-                          TrackArtistColabCreateSerializer,CustomUserSerializer,AdminUserProfileSerializer)
+                          TrackArtistColabCreateSerializer,CustomUserSerializer,UpdateNicknameSerializer)
 
 from math import ceil
 import logging
@@ -65,6 +65,15 @@ class PermissionEnforcementMixin:
 
         return True
 
+
+class UpdateNicknameView(generics.UpdateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = UpdateNicknameSerializer
+    permission_classes = [IsAuthenticatedWithJWT, IsOwnerOrReadOnly]
+
+    def get_object(self):
+        return self.request.user
+
 class UserProfileView(PermissionEnforcementMixin,generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticatedWithJWT,IsOwnerOrReadOnly]
     queryset = CustomUser.objects.all()
@@ -95,6 +104,7 @@ class UserProfileView(PermissionEnforcementMixin,generics.RetrieveUpdateDestroyA
 
 
 class UserSearchView(views.APIView):
+    permission_classes = [IsAuthenticatedWithJWT]
 
     def get(self, request, query):
         try:
@@ -111,27 +121,6 @@ class UserSearchView(views.APIView):
         except CustomUser.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
-class CustomUserView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsOwnerOrReadOnly]
-
-    def get(self, request):
-        user = CustomUser.objects.get(id=request.user.id)
-        serializer = CustomUserSerializer(user)
-        return Response(serializer.data)
-
-    def put(self, request):
-        user = CustomUser.objects.get(id=request.user.id)
-        serializer = CustomUserSerializer(user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request):
-        user = CustomUser.objects.get(id=request.user.id)
-        user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
 
 class AdminUserListEditor(views.APIView):
     permission_classes = [IsAuthenticatedWithJWT,IsAdminUser]
@@ -141,7 +130,6 @@ class AdminUserListEditor(views.APIView):
 
         if query == '' or query is None:
             return CustomUser.objects.all()
-        logger.info(f"DEBUGGER {query}")    
         queryset = CustomUser.objects.filter(Q(username__icontains=query))
         return queryset
 
@@ -302,7 +290,6 @@ class RecordCompanyList(PermissionEnforcementMixin,generics.ListCreateAPIView):
         query = self.request.query_params.get('q', '')
         if query == '':
             return RecordCompany.objects.all()
-        logger.info(f"DEBUGGER {query}")    
         queryset = RecordCompany.objects.filter(Q(name__icontains=query))
         return queryset
 

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext ,Profiler, useEffect } from 'react';
 import {
   BrowserRouter as Router,
   Route,
@@ -23,16 +23,39 @@ import UserProfile from './components/User/UserProfile';
 import UserAdminList from './components/User/UserAdminList';
 import UserAdminDetails from './components/User/UserAdminDetails';
 import AdminBulkDelete from './components/Admin/AdminBulkDelete';
+import Chat from './components/Chat/Chat';
 import { AuthContext } from './contexts/AuthContext';
 import { AuthProvider } from './contexts/AuthProvider';
 
 function App() {
+
+  function callback(
+    id, // the "id" prop of the Profiler tree that has just committed
+    phase, // either "mount" (if the tree just mounted) or "update" (if it re-rendered)
+    actualDuration, // time spent rendering the committed update
+    baseDuration, // estimated time to render the entire subtree without memoization
+    startTime, // when React began rendering this update
+    commitTime, // when React committed this update
+    interactions // the Set of interactions belonging to this update
+  ) {
+    // You can log or store these values for further analysis.
+    // console.log('id:', id);
+    // console.log('phase:', phase);
+    // console.log('actualDuration:', actualDuration);
+    // console.log('baseDuration:', baseDuration);
+    // console.log('startTime:', startTime);
+    // console.log('commitTime:', commitTime);
+    // console.log('interactions:', interactions);
+  }
   return (
+    <Profiler id="Application" onRender={callback}>
+
     <Router>
       <AuthProvider>
         <AppContent/>
       </AuthProvider>
     </Router>
+</Profiler>
 
   );
 }
@@ -43,7 +66,9 @@ function App() {
 
 function AppContent() {
   const { isAuthenticated, user, logout } = useContext(AuthContext);
-
+  useEffect(() => {
+    console.log('AppContent re-rendered');
+  });
   return (
       <div>
         <AppBar position="static">
@@ -123,6 +148,16 @@ function AppContent() {
                     >
                       Statistics
                     </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      component={Link}
+                      to="/chat"
+                      sx={{ marginRight: 2 }}
+
+                    >
+                      Chat
+                    </Button>
                     {isAuthenticated && user.is_admin && (
                       <React.Fragment>
                       <Button
@@ -168,6 +203,7 @@ function AppContent() {
               <Route path="/admin/profiles/:userId" element={<UserAdminDetails />} />
               <Route path="/admin/users" element={<UserAdminList />} />
               <Route path="/admin/editor" element={<AdminBulkDelete />} />
+              <Route path="/chat" element={<Chat />} />
           </Routes>
         </Container>
       </div>

@@ -29,6 +29,7 @@ from music.views import (
     BulkDeleteArtists,
     BulkDeleteTrackArtistColab,
     ExecuteSQLView,
+    UpdateNicknameView,
 )
 
 urlpatterns = [
@@ -61,5 +62,6 @@ urlpatterns = [
     path('admin/bulk_delete/artists/', BulkDeleteArtists.as_view()),
     path('admin/bulk_delete/trackartistcolab/', BulkDeleteTrackArtistColab.as_view()),
     path('admin/execute_sql/', ExecuteSQLView.as_view()),
-    
+    path('users/<int:pk>/nickname/', UpdateNicknameView.as_view()),
+ 
 ]

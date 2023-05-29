@@ -1,4 +1,4 @@
-import React, { useState, useEffect  } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
 
@@ -13,28 +13,26 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const fetchUserAndSetState = async () => {
-        setLoading(true);
-
-        const access = localStorage.getItem('access');
-        const refresh = localStorage.getItem('refresh');
-        const storedUser = localStorage.getItem('user');
-        if (access && refresh && storedUser) {
-            const userData = JSON.parse(storedUser)
-            setIsAuthenticated(true);
-            setUser(userData);
-            setAccess(access);
-            setRefresh(refresh);
-            console.log("User is authenticated");
-            
-        }
-        setLoading(false);
-        
-
+      const access = localStorage.getItem('access');
+      const refresh = localStorage.getItem('refresh');
+      const storedUser = localStorage.getItem('user');
+      if (access && refresh && storedUser) {
+        const userData = JSON.parse(storedUser);
+        setIsAuthenticated(true);
+        setUser(userData);
+        setAccess(access);
+        setRefresh(refresh);
+        console.log('User is authenticated');
+      } else {
+        console.log('User is not authenticated');
+      }
+      setLoading(false);
     }
+  
     fetchUserAndSetState();
-}, []);
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('access');
     localStorage.removeItem('refresh');
     localStorage.removeItem('user');
@@ -45,28 +43,28 @@ export const AuthProvider = ({ children }) => {
     setRefresh(null);
 
     navigate('/login');
-  };
+  }, [navigate]);
+
+  const contextValue = useMemo(() => ({
+    isAuthenticated,
+    setIsAuthenticated,
+    user,
+    setUser,
+    access,
+    setAccess,
+    refresh,
+    setRefresh,
+    logout,
+    userPaginationSize,
+    setPaginationSize,
+    loading,
+  }), [isAuthenticated, setIsAuthenticated, user, setUser, access, setAccess, refresh, setRefresh, logout, userPaginationSize, setPaginationSize, loading]);
 
   if (loading) {
     return <div>Loading...</div>;
   } else {
     return (
-      <AuthContext.Provider
-        value={{
-          isAuthenticated,
-          setIsAuthenticated,
-          user,
-          setUser,
-          access,
-          setAccess,
-          refresh,
-          setRefresh,
-          logout,
-          userPaginationSize,
-          setPaginationSize,
-          loading,
-        }}
-      >
+      <AuthContext.Provider value={contextValue}>
         {children}
       </AuthContext.Provider>
     );

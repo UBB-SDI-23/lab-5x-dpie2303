@@ -17,13 +17,18 @@ class UserLightSerializer(serializers.ModelSerializer):
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'is_regular', 'is_moderator', 'is_admin', 'id']
+        fields = ['username', 'email', 'is_regular', 'is_moderator', 'is_admin', 'id','nickname']
 
 
 class CustomUserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['username', 'email', 'is_regular', 'is_moderator', 'is_admin', 'id','password']
+
+class UpdateNicknameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['nickname']
 
 class UserProfileSerializer(serializers.ModelSerializer):
     user = UserLightSerializer(read_only=True)
