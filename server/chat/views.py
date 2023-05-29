@@ -7,4 +7,6 @@ class LastNMessagesView(generics.ListAPIView):
 
     def get_queryset(self):
         n = self.kwargs.get('n', 10)  # Default to 10 if no 'n' is provided
-        return Message.objects.order_by('timestamp')[:n]
+        latest_messages = list(Message.objects.order_by('-timestamp')[:10])
+        latest_messages.sort(key=lambda msg: msg.timestamp)
+        return latest_messages

@@ -53,8 +53,7 @@ const Chat = () => {
   };
 
   useEffect(() => {
-    ws.current = new WebSocket('ws://localhost:8000/ws/chat/');
-    console.log(user)
+    ws.current = new WebSocket(`${process.env.REACT_APP_SOCKET_BASE_URL}/ws/chat/`);
     ws.current.onopen = () => {
       console.log("WebSocket open");
       setConnectionOpen(true);
