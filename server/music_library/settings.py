@@ -66,6 +66,7 @@ ALLOWED_HOSTS = ['54.172.39.129', '*']
 
 INSTALLED_APPS = [
     'music.apps.MusicConfig',
+    'chat.apps.ChatConfig',
     'accounts.apps.AccountsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -75,6 +76,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'drf_yasg',
+    'channels'
 ]
 if DEBUG == True:
     INSTALLED_APPS += ['django.contrib.staticfiles']
@@ -101,6 +103,16 @@ if DEBUG == True:
 CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'music_library.urls'
+ASGI_APPLICATION = "music_library.routing.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
+    },
+}
 
 # CORS_ALLOWED_ORIGINS =
 #     "https://your-production-domain.com",

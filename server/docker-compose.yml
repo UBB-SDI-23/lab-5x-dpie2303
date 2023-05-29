@@ -13,7 +13,10 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-
+  redis:
+    image: redis:5.0.5
+    ports:
+      - "6379:6379"
   server:
     build:
       context: .
@@ -29,17 +32,17 @@ services:
             #  gunicorn -b 0.0.0.0:8000 music_library.wsgi &&
             #  python manage.py runserver 0.0.0.0:8000
             #  gunicorn -b 0.0.0.0:8000 music_library.wsgi
-               gunicorn -b 0.0.0.0:8000 music_library.wsgi"
+            daphne -b 0.0.0.0 -p 8000 music_library.asgi:application"
             
     depends_on:
       - db
+      - redis
     ports:
       - "8000:8000"
     env_file:
       - .env
     environment:
       - DJANGO_INTERACTIVE=no
-
   nginx:
     container_name: nginx
     image: nginx:latest

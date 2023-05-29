@@ -7,6 +7,7 @@ class CustomUser(AbstractUser):
     is_regular = models.BooleanField('regular status', default=False)
     is_moderator = models.BooleanField('moderator status', default=False)
     is_admin = models.BooleanField('admin status', default=False)
+    nickname = models.CharField(max_length=50, blank=True, null=True)
 
 
     def clean(self):
@@ -16,6 +17,8 @@ class CustomUser(AbstractUser):
     def save(self, *args, **kwargs):
         self.full_clean()
         return super().save(*args, **kwargs)
+    
+    
     # def has_perm(self, perm, obj=None):
     #     # If the user is an admin, they can do everything
     #     if self.is_active and self.is_admin:
