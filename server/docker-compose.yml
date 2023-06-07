@@ -36,7 +36,7 @@ services:
       - DJANGO_INTERACTIVE=no
   nginx:
     container_name: nginx
-    image: nginx:latest
+    image: nginx:1.25.0
     environment:
       - DOMAIN
     depends_on:
@@ -50,7 +50,7 @@ services:
       - ./certbot/data:/var/www/certbot
   certbot:
     container_name: certbot
-    image: certbot/certbot:latest
+    image: certbot/certbot:v2.6.0
     depends_on:
       - nginx
     command: >-
