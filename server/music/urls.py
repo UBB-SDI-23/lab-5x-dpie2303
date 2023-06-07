@@ -30,7 +30,10 @@ from music.views import (
     BulkDeleteTrackArtistColab,
     ExecuteSQLView,
     UpdateNicknameView,
-    RecommendSongs
+    RecommendSongs,
+    UserPlaylistDetail,
+    AddTrackToPlaylist,
+    RemoveTrackFromPlaylist,
 )
 
 urlpatterns = [
@@ -65,6 +68,7 @@ urlpatterns = [
     path('admin/execute_sql/', ExecuteSQLView.as_view()),
     path('users/<int:pk>/nickname/', UpdateNicknameView.as_view()),
     path('recommend_tracks/<int:user_id>/', RecommendSongs.as_view()),
-
- 
+    path('users/<int:user_id>/playlist/', UserPlaylistDetail.as_view(), name='user-playlist'),
+    path('playlist/<int:playlist_id>/add_track/<int:track_id>/', AddTrackToPlaylist.as_view(), name='add_track_to_playlist'),
+    path('playlist/<int:playlist_id>/remove_track/<int:track_id>/', RemoveTrackFromPlaylist.as_view(), name='remove_track_from_playlist'),
 ]

@@ -13,7 +13,7 @@ from music.serializers import (RecordCompanySerializer, TrackArtistColabCreateSe
                           RecordCompanyAverageSalesSerializer,ArtistDetailSerializer,TrackSerializer,
                            TrackArtistColabDetailSerializer , RecordCompanyAverageSalesSerializer,
                           TrackDetailSerializer,UserProfileSerializer, RegisterSerializer, TrackArtistColabSerializer, 
-                          TrackArtistColabCreateSerializer,CustomUserSerializer,UpdateNicknameSerializer)
+                          PlaylistSerializer,PlaylistListSerializer,TrackArtistColabCreateSerializer,CustomUserSerializer,UpdateNicknameSerializer)
 
 from math import ceil
 import logging
@@ -22,7 +22,7 @@ from datetime import timedelta
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
-from music.permissions import IsAdminUser, IsAuthenticatedWithJWT, IsOwnerOrReadOnly
+from music.permissions import IsAdminUser,PermissionEnforcementMixin, IsAuthenticatedWithJWT, IsOwnerOrReadOnly
 from music.recomandation import recomand_tracks
 CustomUser = get_user_model()
 
@@ -45,11 +45,14 @@ def custom_paginate(queryset, page, page_size):
     return sliced_queryset, total_pages
 
 
+class UserPlaylistDetail(generics.RetrieveAPIView):
+    queryset = Playlist.objects.all()
+    serializer_class = PlaylistListSerializer
+    lookup_field = 'user__id'
+    lookup_url_kwarg = 'user_id'
 
 class RecommendSongs(views.APIView):
     def get(self, request, user_id, format=None):
-
-
         # Call your recommend_songs function
         recommended_songs_ids = recomand_tracks(user_id=user_id, n_recommendations=10)
         # Get Track model instances for the recommended songs
@@ -59,25 +62,30 @@ class RecommendSongs(views.APIView):
 
         return Response(serializer.data)
 
-class PermissionEnforcementMixin:
-    """
-    A mixin that adds permission enforcement for unsafe methods.
-    """
-    def check_permissions(self, request):
-        """
-        Overriding the original method to add custom behaviour.
-        """
-        # Call the original check_permissions method
 
-        super().check_permissions(request)
+class AddTrackToPlaylist(views.APIView):
+    permission_classes = [IsAuthenticatedWithJWT,IsOwnerOrReadOnly]
+    def post(self, request, playlist_id, track_id, format=None):
+        playlist = Playlist.objects.get(id=playlist_id)
+        track = Track.objects.get(id=track_id)
 
-        # Add additional check for object permissions
-        if request.method in ['PUT', 'PATCH', 'DELETE']:
-            logging.info(f"CHECKING {self.get_object()}")
-            self.check_object_permissions(request, self.get_object())
+        playlist.tracks.add(track)
+        playlist.save()
 
-        return True
+        serializer = PlaylistSerializer(playlist)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
+class RemoveTrackFromPlaylist(views.APIView):
+    permission_classes = [IsAuthenticatedWithJWT,IsOwnerOrReadOnly]
+    def delete(self, request, playlist_id, track_id, format=None):
+        playlist = Playlist.objects.get(id=playlist_id)
+        track = Track.objects.get(id=track_id)
+
+        playlist.tracks.remove(track)
+        playlist.save()
+
+        serializer = PlaylistSerializer(playlist)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UpdateNicknameView(generics.UpdateAPIView):
     queryset = CustomUser.objects.all()
@@ -186,14 +194,16 @@ class ConfirmRegistrationView(views.APIView):
         try:
             confirmation = ConfirmationCode.objects.get(code=confirmation_code)
             if timezone.now() > confirmation.expiry_date:
+                confirmation.delete()
                 return Response({"error": "Confirmation code expired."}, status=status.HTTP_400_BAD_REQUEST)
+
             else:
                 user = confirmation.user
                 user.is_active = True
                 user.save()
                 logging.info(f"user: {user}")
                 UserProfile.objects.create(user=user)
-
+                Playlist.objects.create(user=user, name="User playlist")
                 confirmation.delete()
                 return Response({"message": "Account confirmed successfully."}, status=status.HTTP_200_OK)
         except ConfirmationCode.DoesNotExist:
@@ -208,7 +218,7 @@ class TrackSearchAPIView(generics.ListAPIView):
     def get_queryset(self):
         query = self.request.query_params.get('q', '')
         if query == '':
-            query=None;
+            query=None
         queryset = Track.objects.filter(Q(name__icontains=query))
         return queryset
 
@@ -254,6 +264,7 @@ class TrackList(generics.ListCreateAPIView):
             'results': serializer.data,
             'total_pages': total_pages
         })
+
 
 
 class AlbumList(PermissionEnforcementMixin,generics.ListCreateAPIView):
