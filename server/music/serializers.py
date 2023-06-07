@@ -2,12 +2,13 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.utils.crypto import get_random_string
 from django.contrib.auth.password_validation import validate_password
-from music.models import RecordCompany,UserProfile, Album,ConfirmationCode, Track, Artist, TrackArtistColab
+from music.models import RecordCompany,UserProfile,Playlist, Album,ConfirmationCode, Track, Artist, TrackArtistColab
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 
 
 CustomUser = get_user_model()
+
 
 class UserLightSerializer(serializers.ModelSerializer):
     class Meta:
@@ -289,3 +290,13 @@ class TrackArtistColabCreateSerializer(serializers.ModelSerializer):
         except Track.DoesNotExist:
             raise serializers.ValidationError("Track not found")
         
+class PlaylistListSerializer(serializers.ModelSerializer):
+    tracks = TrackLightSerializer(many=True)
+    class Meta:
+        model = Playlist
+        fields = ['id', 'name', 'tracks']
+
+class PlaylistSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Playlist
+        fields = ['id', 'name', 'user', 'tracks']

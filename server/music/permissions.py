@@ -8,6 +8,25 @@ logger = logging.getLogger(__name__)
 
 CustomUser = get_user_model()
 
+class PermissionEnforcementMixin:
+    """
+    A mixin that adds permission enforcement for unsafe methods.
+    """
+    def check_permissions(self, request):
+        """
+        Overriding the original method to add custom behaviour.
+        """
+        # Call the original check_permissions method
+
+        super().check_permissions(request)
+
+        # Add additional check for object permissions
+        if request.method in ['PUT', 'PATCH', 'DELETE']:
+            logging.info(f"CHECKING {self.get_object()}")
+            self.check_object_permissions(request, self.get_object())
+
+        return True
+
 class IsAdminUser(permissions.BasePermission):
     """
     Allows access only to admin users.
