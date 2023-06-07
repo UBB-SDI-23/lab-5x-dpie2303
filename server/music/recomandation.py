@@ -22,9 +22,9 @@ def recomand_tracks(user_id,n_recommendations=10):
 
     # Specify the columns you want
     columns = ['id', 'bpm', 'released']
-
+    tracks_sample = 100000
     # Get all tracks with only the specified columns
-    tracks = Track.objects.values(*columns)
+    tracks = Track.objects.values(*columns)[:tracks_sample]
     logging.info('tracks ware readed')
     # Convert the QuerySet to a DataFrame
     df_track = pd.DataFrame.from_records(tracks)
@@ -36,8 +36,11 @@ def recomand_tracks(user_id,n_recommendations=10):
     user_playlists = Playlist.objects.filter(user_id=user_id)
 
     # Get track ids for each playlist
-    user_songs = [track.id for playlist in user_playlists for track in playlist.tracks.all()]
-
+    user_songs = [track for playlist in user_playlists for track in playlist.tracks.all()]
+    # Convert the list of track objects to a DataFrame
+    df_user_songs = pd.DataFrame.from_records([song.__dict__ for song in user_songs])
+    df_user_songs = df_user_songs[columns]
+    df_user_songs.set_index('id', inplace=True)
     # Fit NearestNeighbors model
     model = NearestNeighbors(n_neighbors=n_recommendations, metric='cosine')  # you can adjust parameters as needed
     model.fit(df_track)
@@ -46,9 +49,8 @@ def recomand_tracks(user_id,n_recommendations=10):
     closest_songs = []
 
     for song in user_songs:
-        distances, indices = model.kneighbors(pd.DataFrame(np.array(df_track.loc[song]).reshape(1, -1), columns=df_track.columns))
+        distances, indices = model.kneighbors(pd.DataFrame(np.array(df_user_songs.loc[song.id]).reshape(1, -1), columns=df_user_songs.columns))
         closest_songs.extend(df_track.index[indices[0]])
-        logging.info('closest songs ware extended')
     # Count frequency of each song
     song_freq = pd.Series(closest_songs).value_counts()
 
