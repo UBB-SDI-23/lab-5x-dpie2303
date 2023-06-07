@@ -22,8 +22,7 @@ services:
     volumes:
       - .:/app
     command: >
-      bash -c "set -e &&
-            daphne -b 0.0.0.0 -p 8000 music_library.asgi:application"
+      bash -c "daphne -b 0.0.0.0 -p 8000 music_library.asgi:application"
             
     depends_on:
       - db
