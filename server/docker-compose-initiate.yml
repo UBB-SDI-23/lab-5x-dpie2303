@@ -11,7 +11,7 @@ services:
       - ./etc/nginx/templates-initiate:/etc/nginx/templates
       - ./etc/letsencrypt:/etc/letsencrypt
       - ./certbot/data:/var/www/certbot
-certbot:
+  certbot:
     container_name: certbot
     image: certbot/certbot:v2.6.0
     depends_on:
