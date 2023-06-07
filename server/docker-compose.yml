@@ -18,7 +18,9 @@ services:
     ports:
       - "6379:6379"
   server:
-    image: python:3.9
+    build:
+      context: .
+      dockerfile: Dockerfile.server
     volumes:
       - .:/app
     command: >
