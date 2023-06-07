@@ -11,13 +11,13 @@ services:
       - ./etc/nginx/templates-initiate:/etc/nginx/templates
       - ./etc/letsencrypt:/etc/letsencrypt
       - ./certbot/data:/var/www/certbot
-  certbot:
+certbot:
     container_name: certbot
     image: certbot/certbot:v2.6.0
     depends_on:
       - nginx
     command: >- 
-             certonly --reinstall --webroot --webroot-path=/var/www/certbot
+             certonly --force-renewal --webroot --webroot-path=/var/www/certbot
              --email ${EMAIL} --agree-tos --no-eff-email
              -d ${DOMAIN}
     volumes:
