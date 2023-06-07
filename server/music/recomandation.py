@@ -14,9 +14,7 @@ def recomand_tracks(user_id,n_recommendations=10):
     tracks_sample = 300000
 
     tracks = Track.objects.values(*columns)[:tracks_sample]
-    logging.info('tracks ware readed')
     df_track = pd.DataFrame.from_records(tracks)
-    logging.info('tracks ware converted to dataframe')
     df_track.set_index('id', inplace=True)
 
     user_playlists = Playlist.objects.filter(user_id=user_id)
@@ -27,7 +25,6 @@ def recomand_tracks(user_id,n_recommendations=10):
 
     model = NearestNeighbors(n_neighbors=n_recommendations, metric='cosine')  # you can adjust parameters as needed
     model.fit(df_track)
-    logging.info('model was fitted')
     closest_songs = []
 
     for song in user_songs:

@@ -25,6 +25,7 @@ from music.serializers import (AlbumCreateSerializer, AlbumDetailSerializer, Alb
 
 # Other imports
 from math import ceil
+from datetime import timedelta
 import logging
 
 CustomUser = get_user_model()
@@ -108,14 +109,11 @@ class UserProfileView(PermissionEnforcementMixin,generics.RetrieveUpdateDestroyA
 
 
     def put(self, request, pk):
-        logging.info(f"Is user authenticated? {request.user.is_authenticated}")
-        logging.info(f"request.user: {request.user}")
         user = CustomUser.objects.get(pk=pk)
         user_profile = UserProfile.objects.get(user=user)
         # self.has_object_permission(request, user, user_profile)
         # self.check_object_permissions(request, user_profile)
 
-        logging.info(f"user_profile: {user_profile}")        
 
         serializer = UserProfileSerializer(user_profile, data=request.data)
         if serializer.is_valid():
@@ -177,14 +175,9 @@ class RegisterView(views.APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
-            logging.info(f"serializer.data: {serializer.validated_data}")
             user = serializer.save()
-            logging.info(f"user: {user}")
-            # Create a confirmation code
             code = get_random_string(length=32)
-            ConfirmationCode.objects.create(user=user, code=code, expiry_date=timezone.now()+timedelta(minutes=10))
-            # TODO: send email with the confirmation code to the user
-            logging.info(f"code: {code}") 
+            ConfirmationCode.objects.create(user=user, code=code, expiry_date=timezone.now() + timedelta(minutes=10))
             return Response({"message": "User registered successfully. A confirmation code has been sent.", "confirmation_code": code}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -201,7 +194,6 @@ class ConfirmRegistrationView(views.APIView):
                 user = confirmation.user
                 user.is_active = True
                 user.save()
-                logging.info(f"user: {user}")
                 UserProfile.objects.create(user=user)
                 Playlist.objects.create(user=user, name="User playlist")
                 confirmation.delete()

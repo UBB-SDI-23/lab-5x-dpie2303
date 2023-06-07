@@ -18,10 +18,9 @@ const Chat = () => {
       const message = {
         type: 'chat.message',
         message: newMessage,
-        nickname: isAuthenticated ? user.nickname : 'Anonymous',
-        user_id: isAuthenticated ? user.id : 'Anonymous',
+        nickname: isAuthenticated ? (user.nickname !== null ? user.nickname : user.username) : 'Anonymous',
       };
-
+      console.log("Sending message: ", message);
       if(ws.current.readyState === WebSocket.OPEN) {
         ws.current.send(JSON.stringify(message));
         setNewMessage('');

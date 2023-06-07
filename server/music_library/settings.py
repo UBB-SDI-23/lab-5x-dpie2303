@@ -33,7 +33,6 @@ logger = logging.getLogger(__name__)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(os.environ.get('DEBUG', default=False))
-logger.error(f"DEBUG MODE = {DEBUG}")
 
 #author
 AUTH_USER_MODEL = 'accounts.CustomUser'
@@ -59,7 +58,7 @@ SIMPLE_JWT = {
 }
 
 
-ALLOWED_HOSTS = ['54.172.39.129', '*']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -113,10 +112,6 @@ CHANNEL_LAYERS = {
         },
     },
 }
-
-# CORS_ALLOWED_ORIGINS =
-#     "https://your-production-domain.com",
-# ]
 
 import socket
 
