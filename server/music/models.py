@@ -88,6 +88,11 @@ class Track(models.Model):
         
 
 
+class Playlist(models.Model):
+    name = models.CharField(max_length=255, db_index=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='playlists')
+    tracks = models.ManyToManyField(Track)
+
 class Artist(models.Model):
     name = models.CharField(max_length=255, db_index=True) # Add index
     country_of_origin = models.CharField(max_length=255, null=True)

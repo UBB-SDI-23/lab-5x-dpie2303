@@ -46,7 +46,7 @@ psql -h localhost -p 5432 -U dobo_admin -d music_db -f sql_scripts/tracks.sql
 
 psql -h localhost -p 5432 -U dobo_admin -d music_db -f sql_scripts/track_artist_colab.sql
 psql -h localhost -p 5432 -U dobo_admin -d music_db -f sql_scripts/create_indexes.sql
-psql -h localhost -p 5432 -U dobo_admin -d music_db -f sql_scripts/drop_duplicates.sql
+psql -h localhost -p 5432 -U dobo_admin -d music_db -f sql_scripts/drop_indexes.sql
 
 psql -h localhost -p 5432 -U dobo_admin -d music_db -f sql_scripts/create_count_colum.sql
 psql -h localhost -p 5432 -U dobo_admin -d music_db -f sql_scripts/asign_user_to_data.sql

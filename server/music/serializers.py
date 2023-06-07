@@ -226,7 +226,7 @@ class ArtistDetailSerializer(serializers.ModelSerializer):
 class TrackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Track
-        fields = '__all__'
+        fields = ['id', 'name', 'genres', 'description', 'bpm', 'released', 'album_id', 'user_id']
 
 
 

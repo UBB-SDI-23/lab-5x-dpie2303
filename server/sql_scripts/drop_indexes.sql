@@ -12,8 +12,11 @@ ALTER TABLE music_album DROP CONSTRAINT IF EXISTS music_album_user_id_5762717f_f
 ALTER TABLE music_album DROP CONSTRAINT IF EXISTS music_album_record_company_id_441dcab6_fk_music_rec;
 ALTER TABLE music_recordcompany DROP CONSTRAINT IF EXISTS music_recordcompany_user_id_0d9ed0b0_fk_accounts_customuser_id;
 ALTER TABLE music_artist DROP CONSTRAINT IF EXISTS music_artist_user_id_b0d56609_fk_accounts_customuser_id;
-ALTER TABLE music_confirmationcode DROP CONSTRAINT IF EXISTS music_confirmationcode_user_id_key;
--- Drop non-primary key indexes
+ALTER TABLE music_playlist DROP CONSTRAINT music_playlist_user_id_c54fe691_fk_accounts_customuser_id;
+ALTER TABLE music_playlist_tracks DROP CONSTRAINT music_playlist_tracks_playlist_id_track_id_41c5f695_uniq;
+ALTER TABLE music_playlist_tracks DROP CONSTRAINT music_playlist_tracks_playlist_id_e61336ba_fk_music_playlist_id;
+ALTER TABLE music_playlist_tracks DROP CONSTRAINT music_playlist_tracks_track_id_6c41fa83_fk_music_track_id;
+-- Drop non-primary key indexe
 DROP INDEX IF EXISTS music_track_album_id_f2264d26;
 DROP INDEX IF EXISTS music_trackartistcolab_artist_id_f913e6b0;
 DROP INDEX IF EXISTS music_trackartistcolab_track_id_b773040b;
@@ -34,4 +37,10 @@ DROP INDEX IF EXISTS music_artist_user_id_b0d56609;
 DROP INDEX IF EXISTS music_recordcompany_user_id_0d9ed0b0;
 DROP INDEX IF EXISTS music_track_user_id_396b3280;
 DROP INDEX IF EXISTS music_trackartistcolab_user_id_89084bf6;
+DROP INDEX IF EXISTS music_confirmationcode_user_id_d9b284ea;
+DROP INDEX IF EXISTS music_playlist_name_7476cadc;
+DROP INDEX IF EXISTS music_playlist_name_7476cadc_like;
+DROP INDEX IF EXISTS music_playlist_user_id_c54fe691;
+DROP INDEX IF EXISTS music_playlist_tracks_playlist_id_e61336ba;
+DROP INDEX IF EXISTS music_playlist_tracks_track_id_6c41fa83;
 COMMIT;

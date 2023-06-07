@@ -1,7 +1,5 @@
 BEGIN;
 -- Add constraints
-ALTER TABLE music_userprofile ADD CONSTRAINT music_userprofile_user_id_5531150c_fk_accounts_customuser_id FOREIGN KEY (user_id) REFERENCES accounts_customuser(id) DEFERRABLE INITIALLY DEFERRED;
-ALTER TABLE music_confirmationcode ADD CONSTRAINT music_confirmationco_user_id_d9b284ea_fk_accounts_customuser_id FOREIGN KEY (user_id) REFERENCES accounts_customuser(id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE music_track ADD CONSTRAINT music_track_user_id_396b3280_fk_accounts_customuser_id FOREIGN KEY (user_id) REFERENCES accounts_customuser(id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE music_track ADD CONSTRAINT music_track_album_id_f2264d26_fk_music_album_id FOREIGN KEY (album_id) REFERENCES music_album(id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE music_trackartistcolab ADD CONSTRAINT music_trackartistcol_user_id_89084bf6_fk_accounts_ FOREIGN KEY (user_id) REFERENCES accounts_customuser(id) DEFERRABLE INITIALLY DEFERRED;
@@ -11,7 +9,13 @@ ALTER TABLE music_album ADD CONSTRAINT music_album_user_id_5762717f_fk_accounts_
 ALTER TABLE music_album ADD CONSTRAINT music_album_record_company_id_441dcab6_fk_music_rec FOREIGN KEY (record_company_id) REFERENCES music_recordcompany(id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE music_recordcompany ADD CONSTRAINT music_recordcompany_user_id_0d9ed0b0_fk_accounts_customuser_id FOREIGN KEY (user_id) REFERENCES accounts_customuser(id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE music_artist ADD CONSTRAINT music_artist_user_id_b0d56609_fk_accounts_customuser_id FOREIGN KEY (user_id) REFERENCES accounts_customuser(id) DEFERRABLE INITIALLY DEFERRED;
-
+ALTER TABLE music_userprofile ADD CONSTRAINT music_userprofile_user_id_5531150c_fk_accounts_customuser_id FOREIGN KEY (user_id) REFERENCES accounts_customuser(id) DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE music_userprofile ADD CONSTRAINT music_userprofile_user_id_key UNIQUE (user_id);
+ALTER TABLE music_confirmationcode ADD CONSTRAINT music_confirmationco_user_id_d9b284ea_fk_accounts_ FOREIGN KEY (user_id) REFERENCES accounts_customuser(id) DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE music_playlist ADD CONSTRAINT music_playlist_user_id_c54fe691_fk_accounts_customuser_id FOREIGN KEY (user_id) REFERENCES accounts_customuser(id) DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE music_playlist_tracks ADD CONSTRAINT music_playlist_tracks_playlist_id_track_id_41c5f695_uniq UNIQUE (playlist_id, track_id);
+ALTER TABLE music_playlist_tracks ADD CONSTRAINT music_playlist_tracks_playlist_id_e61336ba_fk_music_playlist_id FOREIGN KEY (playlist_id) REFERENCES music_playlist(id) DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE music_playlist_tracks ADD CONSTRAINT music_playlist_tracks_track_id_6c41fa83_fk_music_track_id FOREIGN KEY (track_id) REFERENCES music_track(id) DEFERRABLE INITIALLY DEFERRED;
 -- Continue with the creation of non-primary key indexes
 CREATE INDEX music_album_copy_sales_d02d7ca3 ON music_album USING btree (copy_sales);
 CREATE INDEX music_album_name_1f80804d ON music_album USING btree (name);
@@ -29,9 +33,15 @@ CREATE INDEX music_artist_user_id_b0d56609 ON music_artist USING btree (user_id)
 CREATE INDEX music_recordcompany_user_id_0d9ed0b0 ON music_recordcompany USING btree (user_id);
 CREATE INDEX music_track_user_id_396b3280 ON music_track USING btree (user_id);
 CREATE INDEX music_trackartistcolab_user_id_89084bf6 ON music_trackartistcolab USING btree (user_id);
-CREATE UNIQUE INDEX music_userprofile_user_id_key ON music_userprofile USING btree (user_id);
+--CREATE INDEX music_userprofile_user_id_key ON music_userprofile USING btree (user_id);
 CREATE INDEX music_track_album_id_f2264d26 ON public.music_track USING btree (album_id);
 CREATE INDEX music_trackartistcolab_artist_id_f913e6b0 ON public.music_trackartistcolab USING btree (artist_id);
 CREATE INDEX music_trackartistcolab_track_id_b773040b ON public.music_trackartistcolab USING btree (track_id);
 CREATE INDEX music_album_record_company_id_441dcab6 ON public.music_album USING btree (record_company_id);
+CREATE INDEX music_confirmationcode_user_id_d9b284ea ON music_confirmationcode USING btree (user_id);
+CREATE INDEX music_playlist_name_7476cadc ON music_playlist USING btree (name);
+CREATE INDEX music_playlist_name_7476cadc_like ON music_playlist USING btree (name varchar_pattern_ops);
+CREATE INDEX music_playlist_user_id_c54fe691 ON music_playlist USING btree (user_id);
+CREATE INDEX music_playlist_tracks_playlist_id_e61336ba ON music_playlist_tracks USING btree (playlist_id);
+CREATE INDEX music_playlist_tracks_track_id_6c41fa83 ON music_playlist_tracks USING btree (track_id);
 COMMIT;

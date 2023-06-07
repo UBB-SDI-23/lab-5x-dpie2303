@@ -14,3 +14,6 @@ psutil
 channels
 channels_redis
 daphne
+scikit-learn
+pandas
+django_pandas

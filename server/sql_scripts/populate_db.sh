@@ -32,6 +32,13 @@ echo "Executing track_artist_colab.sql..."
 psql -h localhost -p 5432 -U dobo_admin -d music_db -f /sql_scripts/track_artist_colab.sql
 echo "Finished executing track_artist_colab.sql."
 
+
+echo "Executing playlists.sql..."
+psql -h localhost -p 5432 -U dobo_admin -d music_db -f /sql_scripts/playlists.sql
+echo "Finished executing playlists.sql."
+
+
+
 echo "Executing create_indexes.sql..."
 psql -h localhost -p 5432 -U dobo_admin -d music_db -f /sql_scripts/create_indexes.sql
 echo "Finished executing create_indexes.sql."

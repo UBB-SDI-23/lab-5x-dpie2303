@@ -6,11 +6,11 @@ from rest_framework import generics, views, status
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from music.models import RecordCompany, Album, UserProfile, ConfirmationCode, Track, Artist, TrackArtistColab
+from music.models import Playlist,RecordCompany, Album, UserProfile, ConfirmationCode, Track, Artist, TrackArtistColab
 from music.serializers import (RecordCompanySerializer, TrackArtistColabCreateSerializer, AlbumSerializer, AlbumDetailSerializer,
                           TrackArtistColab,ArtistCreateSerializer,AlbumCreateSerializer,TrackCreateSerializer,AlbumListSerializer,TrackListSerializer,
                           TrackLightSerializer,ArtistListSerializer, ArtistAverageRoyaltySerializer,
-                          RecordCompanyAverageSalesSerializer,ArtistDetailSerializer,
+                          RecordCompanyAverageSalesSerializer,ArtistDetailSerializer,TrackSerializer,
                            TrackArtistColabDetailSerializer , RecordCompanyAverageSalesSerializer,
                           TrackDetailSerializer,UserProfileSerializer, RegisterSerializer, TrackArtistColabSerializer, 
                           TrackArtistColabCreateSerializer,CustomUserSerializer,UpdateNicknameSerializer)
@@ -23,7 +23,7 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from music.permissions import IsAdminUser, IsAuthenticatedWithJWT, IsOwnerOrReadOnly
-
+from music.recomandation import recomand_tracks
 CustomUser = get_user_model()
 
 
@@ -45,6 +45,19 @@ def custom_paginate(queryset, page, page_size):
     return sliced_queryset, total_pages
 
 
+
+class RecommendSongs(views.APIView):
+    def get(self, request, user_id, format=None):
+
+
+        # Call your recommend_songs function
+        recommended_songs_ids = recomand_tracks(user_id=user_id, n_recommendations=10)
+        # Get Track model instances for the recommended songs
+        recommended_songs = Track.objects.filter(id__in=recommended_songs_ids)
+        # Serialize the queryset
+        serializer = TrackLightSerializer(recommended_songs,many=True)
+
+        return Response(serializer.data)
 
 class PermissionEnforcementMixin:
     """

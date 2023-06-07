@@ -46,7 +46,7 @@ collaboration_types = [
     'Photographer'
 ]
 
-genres_list = [    "Alternative",   "Ambient",   "Blues",   "Classical",   "Country",   "Dance",   "Electronic",   "Folk",   "Hip-Hop",   "Indie",   "Jazz",   "Latin",   "Metal",   "New Age",   "Pop",   "Punk",   "R&B",   "Rap",   "Reggae",   "Rock",   "Soul",   "World",   "Acid Jazz",   "Adult Contemporary",   "African",   "Afro-Cuban",   "Alternative Country",   "Americana",   "Arabic",   "Asian",   "Avant-Garde",   "Bachata",   "Baroque",   "Big Band",   "Bluegrass",   "Boogie Woogie",   "Bossa Nova",   "Calypso",   "Celtic",   "Chamber Music",   "Chanson",   "Choral",   "Christian",   "Classic Rock",   "Contemporary",   "Cool Jazz",   "Country Rock",   "Cowpunk",   "Creole"]
+genres_list = [    "Alternative",  "Ambient",  "Blues",  "Classical",  "Country",  "Dance",  "Electronic",  "Folk",  "Hip-Hop",  "Indie",  "Jazz",  "Latin",  "Metal",  "New Age",  "Pop",  "Punk",  "R&B",  "Rap",  "Reggae",  "Rock",  "Soul",  "World",  "Acid Jazz",  "Adult Contemporary",  "African",  "Afro-Cuban",  "Alternative Country",  "Americana",  "Arabic",  "Asian",  "Avant-Garde",  "Bachata",  "Baroque",  "Big Band",  "Bluegrass",  "Boogie Woogie",  "Bossa Nova",  "Calypso",  "Celtic",  "Chamber Music",  "Chanson",  "Choral",  "Christian",  "Classic Rock",  "Contemporary",  "Cool Jazz",  "Country Rock",  "Cowpunk",  "Creole"]
 
 
 def write_batch_inserts(file,table_name,columns,values):
@@ -162,7 +162,7 @@ def generate_track_artist_colab_sql(num_colabs,num_tracks,num_artists,num_user,b
             write_batch_inserts(f,'music_trackartistcolab','(user_id,track_id,artist_id,collaboration_type,royalty_percentage)',values_batch)
 
 
-def generate_customuser_sql(num_users, batch_size=1000):
+def generate_customuser_sql(num_users,batch_size=1000):
     with open('sql_scripts/users.sql','w') as f:
         values_batch = []
         
@@ -184,10 +184,10 @@ def generate_customuser_sql(num_users, batch_size=1000):
                 is_regular = True
                 username = f"regular_{i+1 - num_admins - num_moderators}"
 
-            email = fake.email().replace("'", "''")
+            email = fake.email().replace("'","''")
             date_joined = fake.date_this_year().isoformat()
-            first_name = fake.first_name().replace("'", "''")
-            last_name = fake.last_name().replace("'", "''")
+            first_name = fake.first_name().replace("'","''")
+            last_name = fake.last_name().replace("'","''")
 
             values_batch.append(
                 f"('{username}','{password}','{email}','{date_joined}',{is_regular},{is_moderator},{is_admin},{is_staff},{is_superuser},{is_active},'{first_name}','{last_name}')"
@@ -212,14 +212,14 @@ def generate_customuser_sql(num_users, batch_size=1000):
 
 
 
-def generate_user_profiles_sql(num_users, batch_size=1000):
+def generate_user_profiles_sql(num_users,batch_size=1000):
     faker = Faker()
-    columns = '(user_id, bio, location, birth_date, gender, marital_status)'
+    columns = '(user_id,bio,location,birth_date,gender,marital_status)'
     values = []
     with open('sql_scripts/user_profiles.sql','w') as f:
-        for i in range(1, num_users+1):
-            bio = faker.text(max_nb_chars=100).replace("'", "'")
-            location = faker.city().replace("'", "'")
+        for i in range(1,num_users+1):
+            bio = faker.text(max_nb_chars=100).replace("'","''")
+            location = faker.city().replace("'","''")
             birth_date = faker.date_of_birth().isoformat()
             gender = faker.random_element(elements=('M','F'))
             marital_status = faker.random_element(elements=('S','M','D','W'))
@@ -243,6 +243,34 @@ def generate_user_profiles_sql(num_users, batch_size=1000):
                 values=values
             )
 
+def generate_playlists_sql(num_users,num_tracks,batch_size=1000):
+    with open('sql_scripts/playlists.sql','w') as f:
+        playlist_values = []
+        track_values = []
+        playlist_id = 1
+        for user_id in range(1,num_users + 1):
+            playlist_name = f"User_{user_id}'s playlist".replace("'","''")
+            playlist_values.append(f"('{playlist_name}',{user_id})")
+
+            num_songs = random.randint(5,15)
+            track_ids = random.sample(range(1,num_tracks + 1),num_songs)
+            for track_id in track_ids:
+                track_values.append(f"({playlist_id},{track_id})")
+
+            if (user_id + 1) % batch_size == 0:
+                write_batch_inserts(f,'music_playlist','(name,user_id)',playlist_values)
+                write_batch_inserts(f,'music_playlist_tracks','(playlist_id,track_id)',track_values)
+                playlist_values = []
+                track_values = []
+
+            playlist_id += 1
+
+        if playlist_values or track_values:
+            write_batch_inserts(f,'music_playlist','(name,user_id)',playlist_values)
+            write_batch_inserts(f,'music_playlist_tracks','(playlist_id,track_id)',track_values)
+
+generate_playlists_sql(num_users=10000,num_tracks=1000000)
+
 
 if __name__ == "__main__":
     num_record_companies = 1000000
@@ -253,12 +281,12 @@ if __name__ == "__main__":
     num_users = 10000
     batch_size = 1000
 
-    # num_record_companies = 5
-    # num_albums = 5
-    # num_tracks = 5
-    # num_artists = 5
-    # num_colabs = 10
-    # num_users = 5
+    # num_record_companies = 10
+    # num_albums = 10
+    # num_tracks = 20
+    # num_artists = 10
+    # num_colabs = 100
+    # num_users = 20
     # batch_size = 2
 
     generate_customuser_sql(num_users,batch_size) 
@@ -275,3 +303,5 @@ if __name__ == "__main__":
     print('artists done')
     generate_track_artist_colab_sql(num_colabs,num_tracks,num_artists,batch_size)
     print('track artist colab done')
+    generate_playlists_sql(num_users,num_tracks)
+    print('playlists done')
