@@ -2,9 +2,7 @@ version: '3'
 
 services:
   db:
-    build:
-      context: .
-      dockerfile: Dockerfile.db
+    image: postgres:13
     volumes:
       - ./data:/var/lib/postgresql/data
       - ./postgresql.conf:/etc/postgresql/postgresql.conf
@@ -26,15 +24,7 @@ services:
     volumes:
       - .:/app
     command: >
-      bash -c "set -e &&
-            #  python manage.py non_interactive_makemigrations &&
-            #  python manage.py migrate 
-            #  python manage.py populate_db &&
-            #  python manage.py collectstatic --no-input &&
-            #  gunicorn -b 0.0.0.0:8000 music_library.wsgi &&
-            #  python manage.py runserver 0.0.0.0:8000
-            #  gunicorn -b 0.0.0.0:8000 music_library.wsgi
-            daphne -b 0.0.0.0 -p 8000 music_library.asgi:application"
+      bash -c "daphne -b 0.0.0.0 -p 8000 music_library.asgi:application"
             
     depends_on:
       - db
@@ -47,7 +37,7 @@ services:
       - DJANGO_INTERACTIVE=no
   nginx:
     container_name: nginx
-    image: nginx:latest
+    image: nginx:1.25.0
     environment:
       - DOMAIN
     depends_on:
@@ -61,13 +51,14 @@ services:
       - ./certbot/data:/var/www/certbot
   certbot:
     container_name: certbot
-    image: certbot/certbot:latest
+    image: certbot/certbot:v2.6.0
     depends_on:
       - nginx
     command: >-
-             certonly --reinstall --webroot --webroot-path=/var/www/certbot
-             --email ${EMAIL} --agree-tos --no-eff-email
-             -d ${DOMAIN}
+            certonly --reinstall --webroot --webroot-path=/var/www/certbot
+            --email ${EMAIL} --agree-tos --no-eff-email
+            -d ${DOMAIN}
     volumes:
       - ./etc/letsencrypt:/etc/letsencrypt
       - ./certbot/data:/var/www/certbot
+    entrypoint:  "/bin/sh -c 'echo \"0 0 1 */2 * root python -c \\\"import random; import time; time.sleep(random.random() * 3600)\\\" && certbot renew -q\" >> /etc/crontab && crond -f'"

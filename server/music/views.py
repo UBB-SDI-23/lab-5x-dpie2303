@@ -1,29 +1,33 @@
-from django.db.models import Avg, Q
-  
-from django.utils.crypto import get_random_string
-
-from rest_framework import generics, views, status
-
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from music.models import Playlist,RecordCompany, Album, UserProfile, ConfirmationCode, Track, Artist, TrackArtistColab
-from music.serializers import (RecordCompanySerializer, TrackArtistColabCreateSerializer, AlbumSerializer, AlbumDetailSerializer,
-                          TrackArtistColab,ArtistCreateSerializer,AlbumCreateSerializer,TrackCreateSerializer,AlbumListSerializer,TrackListSerializer,
-                          TrackLightSerializer,ArtistListSerializer, ArtistAverageRoyaltySerializer,
-                          RecordCompanyAverageSalesSerializer,ArtistDetailSerializer,TrackSerializer,
-                           TrackArtistColabDetailSerializer , RecordCompanyAverageSalesSerializer,
-                          TrackDetailSerializer,UserProfileSerializer, RegisterSerializer, TrackArtistColabSerializer, 
-                          PlaylistSerializer,PlaylistListSerializer,TrackArtistColabCreateSerializer,CustomUserSerializer,UpdateNicknameSerializer)
-
-from math import ceil
-import logging
-from django.db import connection
-from datetime import timedelta
-from django.utils import timezone
+# Django imports
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
-from music.permissions import IsAdminUser,PermissionEnforcementMixin, IsAuthenticatedWithJWT, IsOwnerOrReadOnly
+from django.db import connection
+from django.db.models import Avg, Q
+from django.utils import timezone
+from django.utils.crypto import get_random_string
+
+# Rest Framework imports
+from rest_framework import generics, views, status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+# Local imports
+from music.models import (Album, Artist, ConfirmationCode, Playlist, RecordCompany, Track, TrackArtistColab, UserProfile)
+from music.permissions import (IsAdminUser, IsAuthenticatedWithJWT, IsOwnerOrReadOnly, PermissionEnforcementMixin)
 from music.recomandation import recomand_tracks
+from music.serializers import (AlbumCreateSerializer, AlbumDetailSerializer, AlbumListSerializer, AlbumSerializer, 
+                               ArtistAverageRoyaltySerializer, ArtistCreateSerializer, ArtistDetailSerializer, 
+                               ArtistListSerializer, CustomUserSerializer, PlaylistListSerializer, PlaylistSerializer, 
+                               RecordCompanyAverageSalesSerializer, RecordCompanySerializer, RegisterSerializer, 
+                               TrackArtistColabCreateSerializer, TrackArtistColabDetailSerializer, TrackArtistColabSerializer, 
+                               TrackCreateSerializer, TrackDetailSerializer, TrackLightSerializer, TrackListSerializer, 
+                               UpdateNicknameSerializer, UserProfileSerializer)
+
+# Other imports
+from math import ceil
+from datetime import timedelta
+import logging
+
 CustomUser = get_user_model()
 
 
@@ -35,7 +39,7 @@ def custom_paginate(queryset, page, page_size):
     end = start + page_size
 
     
-    total_items = queryset.count()  # Get the exact count
+    total_items = queryset.count()  
     total_pages = ceil(total_items / page_size)
     sliced_queryset = queryset[start:end]
     # Use raw SQL for pagination
@@ -53,11 +57,8 @@ class UserPlaylistDetail(generics.RetrieveAPIView):
 
 class RecommendSongs(views.APIView):
     def get(self, request, user_id, format=None):
-        # Call your recommend_songs function
         recommended_songs_ids = recomand_tracks(user_id=user_id, n_recommendations=10)
-        # Get Track model instances for the recommended songs
         recommended_songs = Track.objects.filter(id__in=recommended_songs_ids)
-        # Serialize the queryset
         serializer = TrackLightSerializer(recommended_songs,many=True)
 
         return Response(serializer.data)
@@ -108,14 +109,11 @@ class UserProfileView(PermissionEnforcementMixin,generics.RetrieveUpdateDestroyA
 
 
     def put(self, request, pk):
-        logging.info(f"Is user authenticated? {request.user.is_authenticated}")
-        logging.info(f"request.user: {request.user}")
         user = CustomUser.objects.get(pk=pk)
         user_profile = UserProfile.objects.get(user=user)
         # self.has_object_permission(request, user, user_profile)
         # self.check_object_permissions(request, user_profile)
 
-        logging.info(f"user_profile: {user_profile}")        
 
         serializer = UserProfileSerializer(user_profile, data=request.data)
         if serializer.is_valid():
@@ -177,14 +175,9 @@ class RegisterView(views.APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
-            logging.info(f"serializer.data: {serializer.validated_data}")
             user = serializer.save()
-            logging.info(f"user: {user}")
-            # Create a confirmation code
             code = get_random_string(length=32)
-            ConfirmationCode.objects.create(user=user, code=code, expiry_date=timezone.now()+timedelta(minutes=10))
-            # TODO: send email with the confirmation code to the user
-            logging.info(f"code: {code}") 
+            ConfirmationCode.objects.create(user=user, code=code, expiry_date=timezone.now() + timedelta(minutes=10))
             return Response({"message": "User registered successfully. A confirmation code has been sent.", "confirmation_code": code}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -201,7 +194,6 @@ class ConfirmRegistrationView(views.APIView):
                 user = confirmation.user
                 user.is_active = True
                 user.save()
-                logging.info(f"user: {user}")
                 UserProfile.objects.create(user=user)
                 Playlist.objects.create(user=user, name="User playlist")
                 confirmation.delete()

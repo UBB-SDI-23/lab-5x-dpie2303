@@ -22,7 +22,6 @@ class PermissionEnforcementMixin:
 
         # Add additional check for object permissions
         if request.method in ['PUT', 'PATCH', 'DELETE']:
-            logging.info(f"CHECKING {self.get_object()}")
             self.check_object_permissions(request, self.get_object())
 
         return True
