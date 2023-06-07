@@ -25,10 +25,10 @@ def recomand_tracks(user_id,n_recommendations=10):
 
     # Get all tracks with only the specified columns
     tracks = Track.objects.values(*columns)
-
+    logging.info('tracks ware readed')
     # Convert the QuerySet to a DataFrame
     df_track = pd.DataFrame.from_records(tracks)
-
+    logging.info('tracks ware converted to dataframe')
     # Set 'id' as the index for easier access
     df_track.set_index('id', inplace=True)
 
@@ -41,14 +41,14 @@ def recomand_tracks(user_id,n_recommendations=10):
     # Fit NearestNeighbors model
     model = NearestNeighbors(n_neighbors=n_recommendations, metric='cosine')  # you can adjust parameters as needed
     model.fit(df_track)
-
+    logging.info('model was fitted')
     # Initialize an empty list to store the closest songs
     closest_songs = []
 
     for song in user_songs:
         distances, indices = model.kneighbors(pd.DataFrame(np.array(df_track.loc[song]).reshape(1, -1), columns=df_track.columns))
         closest_songs.extend(df_track.index[indices[0]])
-
+        logging.info('closest songs ware extended')
     # Count frequency of each song
     song_freq = pd.Series(closest_songs).value_counts()
 

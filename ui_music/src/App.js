@@ -24,6 +24,8 @@ import UserAdminList from './components/User/UserAdminList';
 import UserAdminDetails from './components/User/UserAdminDetails';
 import AdminBulkDelete from './components/Admin/AdminBulkDelete';
 import Chat from './components/Chat/Chat';
+import Playlist from './components/Playlist/Playlist';
+
 import { AuthContext } from './contexts/AuthContext';
 import { AuthProvider } from './contexts/AuthProvider';
 
@@ -158,6 +160,16 @@ function AppContent() {
                     >
                       Chat
                     </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      component={Link}
+                      to="/playlist"
+                      sx={{ marginRight: 2 }}
+
+                    >
+                      Playlist
+                    </Button>
                     {isAuthenticated && user.is_admin && (
                       <React.Fragment>
                       <Button
@@ -204,6 +216,8 @@ function AppContent() {
               <Route path="/admin/users" element={<UserAdminList />} />
               <Route path="/admin/editor" element={<AdminBulkDelete />} />
               <Route path="/chat" element={<Chat />} />
+              <Route path="/playlist" element={<Playlist />} />
+
           </Routes>
         </Container>
       </div>
