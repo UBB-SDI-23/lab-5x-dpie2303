@@ -22,7 +22,7 @@ def recomand_tracks(user_id,n_recommendations=10):
 
     # Specify the columns you want
     columns = ['id', 'bpm', 'released']
-    tracks_sample = 100000
+    tracks_sample = 300000
     # Get all tracks with only the specified columns
     tracks = Track.objects.values(*columns)[:tracks_sample]
     logging.info('tracks ware readed')
