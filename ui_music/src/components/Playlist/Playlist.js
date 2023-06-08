@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Container, Typography, Grid, Box, Button, List, TextField, Pagination } from '@mui/material';
+import { Container, Typography, Grid, Box, Button, TextField, Pagination } from '@mui/material';
 import TrackCard from './TrackCard';
 import { AuthContext } from '../../contexts/AuthContext';
 import api from '../api';  // replace with your API module
