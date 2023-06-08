@@ -19,6 +19,8 @@ def recomand_tracks(user_id,n_recommendations=10):
 
     user_playlists = Playlist.objects.filter(user_id=user_id)
     user_songs = [track for playlist in user_playlists for track in playlist.tracks.all()]
+    if not user_songs:
+        return []
     df_user_songs = pd.DataFrame.from_records([song.__dict__ for song in user_songs])
     df_user_songs = df_user_songs[columns]
     df_user_songs.set_index('id', inplace=True)

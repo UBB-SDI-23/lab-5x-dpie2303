@@ -10,10 +10,10 @@ const TrackCard = ({ track, onAdd, onRemove }) => {
   }
 
   return (
-    <Card>
+    <Card sx={{ height: '100%' }}>
       <CardContent>
-        <Typography variant="h5">{track.name}</Typography>
-        <Typography variant="subtitle1">Release year: {track.released}</Typography>
+        <Typography variant="h6">{track.name}</Typography>
+        <Typography variant="subtitle2">Release year: {track.released}</Typography>
         {onAdd && <Button onClick={() => onAdd(track.id)}>Add to Playlist</Button>}
         {onRemove && <Button onClick={() => onRemove(track.id)}>Remove from Playlist</Button>}
       </CardContent>

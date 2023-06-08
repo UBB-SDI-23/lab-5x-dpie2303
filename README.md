@@ -128,11 +128,11 @@ This project requires npm, Docker, and Docker Compose.
 
 
 5. **Optional!**  
-   This aplication contains a setup to populate the database.
+   This aplication contains a setup to populate the database.  
    **Make sure** that your do this setup **before** you do any actions on the apllication.  
    Adjust the number of entities created by modifying the script in  **server/music_library**  
 
-   Start your **backend** setup using the previous steps.
+   Start the **backend** setup using the previous steps.
    Create the **.sql** files that contain the artificial data.  
    ```sh
    docker ps # get the server container id
@@ -172,6 +172,7 @@ This project requires npm, Docker, and Docker Compose.
       
 ### Nginx & Certbot
   These tools are used to create a proxy server and ensure HTTPS connection. 
+
 ### Redis
   Redis is used as a communication layer for the Django application, enabling multiple Django threads to communicate with each other using a web socket connection. While Redis is fast and efficient, it requires careful management of data persistence and memory use.
 
